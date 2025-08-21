@@ -271,7 +271,7 @@ function lenient_bignum(x)
   -- Note that any ante scaling tweaks will need to manually changed...
   local gba = get_blind_amount
   function get_blind_amount(ante)
-    if G.GAME.modifiers.scaling and G.GAME.modifiers.scaling > 3 then return SMODS.get_blind_amount(ante) end
+    if G.GAME.modifiers.scaling and (G.GAME.modifiers.scaling ~= 1 and G.GAME.modifiers.scaling ~= 2 and G.GAME.modifiers.scaling ~= 3) then return SMODS.get_blind_amount(ante) end
     if type(to_big(1)) == 'number' then return gba(ante) end
       local k = to_big(0.75)
       if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
