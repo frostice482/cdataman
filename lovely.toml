@@ -314,10 +314,11 @@ match_indent = true
 
 # For some reason Big leaks into the text engine, this mitigates it
 [[patches]]
-[patches.pattern]
+[patches.regex]
 target = "engine/text.lua"
-pattern = "if self.strings[k].W > self.config.W then self.config.W = self.strings[k].W; self.strings[k].W_offset = 0 end"
+pattern = '''(?<indent>[\t ]*)if self\.strings\[k\]\.W > self\.config\.W then'''
 position = "before"
+line_prepend = "$indent"
 payload = '''
 if Big then
 	if type(self.strings[k].W) == 'table' then
@@ -342,11 +343,11 @@ end
 '''
 match_indent = true
 
-[[patches]]
+[[patches]] # Backward compat no longer needed - Talisman is now dependent on Chip-Mult Operator API
 [patches.pattern]
 target = "engine/text.lua"
-pattern = "for k, letter in ipairs(self.strings[self.focused_string].letters) do"
-position = "after"
+pattern = "local letter = self.strings[self.focused_string].letters[k]"
+position = "after" # This is for Aiko's new mod menu interference with DynaText
 payload = '''
 if Big then
 	letter.dims.x = to_number(letter.dims.x)
@@ -1487,22 +1488,10 @@ target = 'functions/misc_functions.lua'
 position = 'at'
 match_indent = true
 pattern = '''
-G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
+G.ARGS.score_intensity.earned_score = SMODS.calculate_round_score(true)
 '''
 payload = '''
-G.ARGS.score_intensity.earned_score = math.min(to_number(G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult), 1e300)
-'''
-
-# G.FUNCS.flame_handler
-[[patches]]
-[patches.pattern]
-target = '''=[SMODS _ "src/ui.lua"]'''
-pattern = '''
-if G.ARGS.score_intensity.earned_score >= G.ARGS.score_intensity.required_score and G.ARGS.score_intensity.required_score > 0 then
-'''
-position = '''at'''
-payload = '''
-if to_big(G.ARGS.score_intensity.earned_score) >= to_big(G.ARGS.score_intensity.required_score) and to_big(G.ARGS.score_intensity.required_score) > to_big(0) then
+G.ARGS.score_intensity.earned_score = math.min(to_number(SMODS.calculate_round_score(true)), 1e300)
 '''
 
 # evaluate_play_final_scoring comparison
