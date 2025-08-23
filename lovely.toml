@@ -343,7 +343,22 @@ end
 '''
 match_indent = true
 
-[[patches]] # Backward compat no longer needed - Talisman is now dependent on Chip-Mult Operator API
+[[patches]]
+[patches.pattern]
+target = "engine/text.lua"
+pattern = "for k, letter in ipairs(self.strings[self.focused_string].letters) do"
+position = "after" # old DynaText backward compat
+payload = '''
+if Big then
+	letter.dims.x = to_number(letter.dims.x)
+	letter.dims.y = to_number(letter.dims.y)
+	letter.offset.x = to_number(letter.offset.x)
+	letter.offset.y = to_number(letter.offset.y)
+end
+'''
+match_indent = true
+
+[[patches]]
 [patches.pattern]
 target = "engine/text.lua"
 pattern = "local letter = self.strings[self.focused_string].letters[k]"
@@ -1309,6 +1324,7 @@ target = 'functions/common_events.lua'
 pattern = "if amt > 0 or amt < 0 then"
 position = 'at'
 payload = "if to_big(amt) > to_big(0) or to_big(amt) < to_big(0) then"
+match_indent = true
 
 [[patches]]
 [patches.regex]
@@ -1477,6 +1493,18 @@ G.E_MANAGER:add_event(Event({
         return true
     end
 }))
+'''
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+position = 'at'
+match_indent = true
+pattern = '''
+G.ARGS.score_intensity.earned_score = G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
+'''
+payload = '''
+G.ARGS.score_intensity.earned_score = math.min(to_number(G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult), 1e300)
 '''
 
 [[patches]]
