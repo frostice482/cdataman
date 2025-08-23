@@ -1501,7 +1501,7 @@ target = 'functions/misc_functions.lua'
 position = 'at'
 match_indent = true
 pattern = '''
-G.ARGS.score_intensity.earned_score = G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
+G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
 '''
 payload = '''
 G.ARGS.score_intensity.earned_score = math.min(to_number(G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult), 1e300)
