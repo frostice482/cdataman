@@ -1528,7 +1528,7 @@ if  SMODS.calculate_round_score()  > 0 then
 '''
 position = '''at'''
 payload = '''
-if  SMODS.calculate_round_score()  > to_big(0) then
+if  to_big(SMODS.calculate_round_score())  > to_big(0) then
 '''
 match_indent = true
 
