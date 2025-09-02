@@ -40,7 +40,7 @@ function init_localization()
 	talismanloc()
 end
 
-Talisman = {config_file = {disable_anims = false, break_infinity = "omeganum", score_opt_id = 3}, mod_path = talisman_path}
+Talisman = {config_file = {disable_anims = false, break_infinity = "omeganum", score_opt_id = 2}, mod_path = talisman_path}
 if nativefs.read(talisman_path.."/config.lua") then
     Talisman.config_file = STR_UNPACK(nativefs.read(talisman_path.."/config.lua"))
     if Talisman.config_file.break_infinity == "bignumber" then
