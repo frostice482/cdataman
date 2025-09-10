@@ -1210,6 +1210,12 @@ function Big:arrow(arrows, other)
     if (other:eq(B.ONE)) then
         return t:clone()
     end
+    if self:eq(2) and other:eq(2) then
+        -- handle infinite arrows
+        if arrows:isInfinite() then return Big:create(R.POSITIVE_INFINITY) end
+
+        return Big:create(4)
+    end
     --[[if (arrows:gte(maxArrow)) then
         return Big:create(B.POSITIVE_INFINITY)
     end--]]
