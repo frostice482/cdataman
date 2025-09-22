@@ -1,3 +1,8 @@
+local ffi = require("ffi")
+
+ffi.cdef[[ struct TalismanBig { double m; double e; }; ]]
+local TalismanBig = ffi.typeof("struct TalismanBig")
+
 -- class table
 Big = {
     m = 0,
@@ -8,12 +13,16 @@ Big = {
 BigMeta = {}
 BigMeta.__index = Big
 
+function Big.is(instance)
+    return type(instance) == "cdata" and ffi.istype(instance, TalismanBig)
+end
+
 --- Create a new Big number
 --
 -- numbers are stored in the form `m * 10 ^ e`
 function Big:new(m, e)
-    if type(m) == "table" then
-        return setmetatable({m = m.m, e = m.e}, BigMeta):normalized()
+    if Big.is(m) then
+        return TalismanBig(m.m, m.e):normalized()
     end
     if e == nil then e = 0 end
 
@@ -21,7 +30,7 @@ function Big:new(m, e)
         return Big.parse(m)
     end
 
-    return setmetatable({m = m, e = e}, BigMeta):normalized()
+    return TalismanBig(m, e):normalized()
 end
 
 function Big:normalize()
@@ -146,8 +155,8 @@ function Big:pow(pow)
 end
 
 function BigMeta.__pow(b1, n)
-    if type(n) == "table" then n = n:to_number() end
-    if type(b1) ~= "table" then b1 = Big:new(b1) end
+    if Big.is(n) then n = n:to_number() end
+    if not Big.is(b1) then b1 = Big:new(b1) end
     return b1:pow(n)
 end
 
@@ -349,6 +358,15 @@ function BigMeta.__concat(a, b)
     a = Big:create(a)
     return tostring(a) .. tostring(b)
 end
+
+function Big:as_table()
+    return {
+        m = self.m,
+        e = self.e
+    }
+end
+
+ffi.metatype(TalismanBig, BigMeta)
 
 --Adding things OmegaNum has that this doesn't...
 R = {}

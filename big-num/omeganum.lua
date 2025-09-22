@@ -1,13 +1,19 @@
+local ffi = require("ffi")
+
+ffi.cdef[[ struct TalismanOmega {}; ]]
+local TalismanOmega = ffi.typeof("struct TalismanOmega")
+
 --OmegaNum port by Mathguy
 Big = {
-    array = {},
-    sign = 1
+    array = {}
 }
+
+local bigs = {}
+setmetatable(bigs, { __mode = 'k' })
 
 maxArrow = 1e3
 
 OmegaMeta = {}
-OmegaMeta.__index = Big
 
 external = true
 
@@ -72,6 +78,10 @@ end
 
 ------------------------------------------------------
 
+function Big.is(instance)
+    return type(instance) == "cdata" and ffi.istype(instance, TalismanOmega)
+end
+
 function Big:arraySize()
     local total = 0
     for i, v in pairs(self.array) do
@@ -83,7 +93,12 @@ function Big:arraySize()
 end
 
 function Big:new(arr)
-    return setmetatable({array = arr, sign = 1}, OmegaMeta):normalize()
+    local obj = TalismanOmega()
+    obj.array = arr
+    obj.sign = 1
+    obj:normalize()
+    obj.where = debug.traceback()
+    return obj
 end
 
 function Big:isNaN()
@@ -138,7 +153,7 @@ function Big:compareTo(other)
     elseif (self_array_size<other_array_size) then
         r = -1;
     else
-        if self_array_size == 1 then 
+        if self_array_size == 1 then
             if self.array[1] > other.array[1]  then
                 return 1 * m
             elseif self.array[1] < other.array[1] then
@@ -572,7 +587,7 @@ function Big:to_number()
             end
         end
     end
-    if (type(self.array[1]) == "table") then
+    if (Big.is(self.array[1])) then
         self.array[1] = self.array[1]:to_number()
     end
     if (self.array[2]==1) then
@@ -610,7 +625,7 @@ function Big:create(input)
         return Big:new({input})
     elseif ((type(input) == "string")) then
         return Big:parse(input)
-    elseif ((type(input) == "table") and getmetatable(input) == OmegaMeta) then
+    elseif Big.is(input) then
         return input:clone()
     else
         return Big:new(input)
@@ -618,7 +633,7 @@ function Big:create(input)
 end
 
 function Big:ensureBig(input)
-    if ((type(input) == "table") and getmetatable(input) == OmegaMeta) then
+    if Big.is(input) then
         return input
     else
         return Big:create(input)
@@ -1135,7 +1150,7 @@ function Big:tetrate(other)
 end
 
 function Big:max_for_op(arrows)
-    if type(arrows) == "table" then
+    if Big.is(arrows) then
         arrows = arrows:to_number()
     end
     if arrows < 1 or arrows ~= arrows or arrows == R.POSITIVE_INFINITY then
@@ -1158,7 +1173,7 @@ function Big:max_for_op(arrows)
         local limit = math.floor(math.log(arrows, 10))
         for i = 6, limit do
             arr[10^i] = 8
-        end 
+        end
     end
     arr[arrows - 1] = 8
 
@@ -1381,6 +1396,10 @@ function Big:d_lambertw(z)
     return a.b
 end
 
+function Big:as_table()
+    return bigs[self]
+end
+
 ------------------------metastuff----------------------------
 
 function OmegaMeta.__add(b1, b2)
@@ -1462,6 +1481,16 @@ function OmegaMeta.__concat(a, b)
     return tostring(a) .. tostring(b)
 end
 
+function OmegaMeta.__index(t, k)
+    return k ~= 'array' and Big[k] or bigs[t] and bigs[t][k]
+end
+
+function OmegaMeta.__newindex(t, k, v)
+    bigs[t] = bigs[t] or {}
+    bigs[t][k] = v
+end
+
+ffi.metatype(TalismanOmega, OmegaMeta)
 
 ---------------------------------------
 

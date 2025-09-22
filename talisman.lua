@@ -4,7 +4,7 @@ local nativefs = require("nativefs")
 local info = nativefs.getDirectoryItemsInfo(lovely.mod_dir)
 local talisman_path = ""
 for i, v in pairs(info) do
-  if v.type == "directory" and nativefs.getInfo(lovely.mod_dir .. "/" .. v.name .. "/talisman.lua") then talisman_path = lovely.mod_dir .. "/" .. v.name end
+  if nativefs.getInfo(lovely.mod_dir .. "/" .. v.name .. "/talisman.lua") then talisman_path = lovely.mod_dir .. "/" .. v.name end
 end
 
 if not nativefs.getInfo(talisman_path) then
@@ -125,7 +125,7 @@ end
 if Talisman.config_file.break_infinity then
   Big, err = nativefs.load(talisman_path.."/big-num/"..Talisman.config_file.break_infinity..".lua")
   if not err then Big = Big() else Big = nil end
-  Notations = nativefs.load(talisman_path.."/big-num/notations.lua")()
+  Notations = assert(nativefs.load(talisman_path.."/big-num/notations.lua"))()
   -- We call this after init_game_object to leave room for mods that add more poker hands
   Talisman.igo = function(obj)
       for _, v in pairs(obj.hands) do
@@ -143,7 +143,7 @@ if Talisman.config_file.break_infinity then
 
   local nf = number_format
   function number_format(num, e_switch_point)
-      if type(num) == 'table' then
+      if is_big(num) then
           --num = to_big(num)
           if num.str then return num.str end
           if num:arraySize() > 2 then
@@ -162,12 +162,12 @@ if Talisman.config_file.break_infinity then
 
   local mf = math.floor
   function math.floor(x)
-      if type(x) == 'table' then return x.floor and x:floor() or x end
+      if is_big(x) then return x.floor and x:floor() or x end
       return mf(x)
   end
   local mc = math.ceil
   function math.ceil(x)
-      if type(x) == 'table' then return x:ceil() end
+      if is_big(x) then return x:ceil() end
       return mc(x)
   end
 
@@ -183,7 +183,7 @@ function lenient_bignum(x)
   local sns = score_number_scale
   function score_number_scale(scale, amt)
     local ret = sns(scale, amt)
-    if type(ret) == "table" then
+    if is_big(ret) then
       if ret > to_big(1e300) then return 1e300 end
       return ret:to_number()
     end
@@ -192,7 +192,7 @@ function lenient_bignum(x)
 
   local gftsj = G.FUNCS.text_super_juice
   function G.FUNCS.text_super_juice(e, _amount)
-    if type(_amount) == "table" then
+    if is_big(_amount) then
       if _amount > to_big(1e300) then
         _amount = 1e300
       else
@@ -204,7 +204,7 @@ function lenient_bignum(x)
 
   local l10 = math.log10
   function math.log10(x)
-      if type(x) == 'table' then 
+      if is_big(x) then
         if x.log10 then return lenient_bignum(x:log10()) end
         return lenient_bignum(l10(math.min(x:to_number(),1e300)))
       end
@@ -214,7 +214,7 @@ function lenient_bignum(x)
   local lg = math.log
   function math.log(x, y)
       if not y then y = 2.718281828459045 end
-      if type(x) == 'table' then 
+      if is_big(x) then
         if x.log then return lenient_bignum(x:log(to_big(y))) end
         if x.logBase then return lenient_bignum(x:logBase(to_big(y))) end
         return lenient_bignum(lg(math.min(x:to_number(),1e300),y))
@@ -224,13 +224,13 @@ function lenient_bignum(x)
 
   function math.exp(x)
     local big_e = to_big(2.718281828459045)
-    
+
     if type(big_e) == "number" then
       return lenient_bignum(big_e ^ x)
     else
       return lenient_bignum(big_e:pow(x))
     end
-  end 
+  end
 
   if SMODS then
     function SMODS.get_blind_amount(ante)
@@ -246,9 +246,9 @@ function lenient_bignum(x)
           to_big(10000 + 25000*(scale+1)*((scale/4)^2)),
           to_big(50000 * (scale+1)^2 * (scale/7)^2)
       }
-      
+
       if ante < 1 then return to_big(100) end
-      if ante <= 8 then 
+      if ante <= 8 then
         local amount = amounts[ante]
         if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
           local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
@@ -274,7 +274,7 @@ function lenient_bignum(x)
     if G.GAME.modifiers.scaling and (G.GAME.modifiers.scaling ~= 1 and G.GAME.modifiers.scaling ~= 2 and G.GAME.modifiers.scaling ~= 3) then return SMODS.get_blind_amount(ante) end
     if type(to_big(1)) == 'number' then return gba(ante) end
       local k = to_big(0.75)
-      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then 
+      if not G.GAME.modifiers.scaling or G.GAME.modifiers.scaling == 1 then
         local amounts = {
           to_big(300),  to_big(800), to_big(2000),  to_big(5000),  to_big(11000),  to_big(20000),   to_big(35000),  to_big(50000)
         }
@@ -288,7 +288,7 @@ function lenient_bignum(x)
         end
         amount:normalize()
         return amount
-      elseif G.GAME.modifiers.scaling == 2 then 
+      elseif G.GAME.modifiers.scaling == 2 then
         local amounts = {
           to_big(300),  to_big(900), to_big(2600),  to_big(8000), to_big(20000),  to_big(36000),  to_big(60000),  to_big(100000)
           --300,  900, 2400,  7000,  18000,  32000,  56000,  90000
@@ -303,7 +303,7 @@ function lenient_bignum(x)
         end
         amount:normalize()
         return amount
-      elseif G.GAME.modifiers.scaling == 3 then 
+      elseif G.GAME.modifiers.scaling == 3 then
         local amounts = {
           to_big(300),  to_big(1000), to_big(3200),  to_big(9000),  to_big(25000),  to_big(60000),  to_big(110000),  to_big(200000)
           --300,  1000, 3000,  8000,  22000,  50000,  90000,  180000
@@ -341,7 +341,7 @@ function lenient_bignum(x)
     if not G.PROFILES[G.SETTINGS.profile].career_stats[stat] then G.PROFILES[G.SETTINGS.profile].career_stats[stat] = 0 end
     G.PROFILES[G.SETTINGS.profile].career_stats[stat] = G.PROFILES[G.SETTINGS.profile].career_stats[stat] + (mod or 0)
     -- Make sure this isn't ever a talisman number
-    if type(G.PROFILES[G.SETTINGS.profile].career_stats[stat]) == 'table' then
+    if is_big(G.PROFILES[G.SETTINGS.profile].career_stats[stat]) then
       if G.PROFILES[G.SETTINGS.profile].career_stats[stat] > to_big(1e300) then
         G.PROFILES[G.SETTINGS.profile].career_stats[stat] = to_big(1e300)
       elseif G.PROFILES[G.SETTINGS.profile].career_stats[stat] < to_big(-1e300) then
@@ -387,7 +387,7 @@ function lenient_bignum(x)
 
   local tsj = G.FUNCS.text_super_juice
   function G.FUNCS.text_super_juice(e, _amount)
-    if type(_amount) == 'table' then
+    if is_big(_amount) then
       if _amount > to_big(2) then _amount = 2 end
     else
       if _amount > 2 then _amount = 2 end
@@ -398,7 +398,7 @@ function lenient_bignum(x)
   local max = math.max
   --don't return a Big unless we have to - it causes nativefs to break
   function math.max(x, y)
-    if type(x) == 'table' or type(y) == 'table' then
+    if is_big(x) or is_big(y) then
     x = to_big(x)
     y = to_big(y)
     if (x > y) then
@@ -411,7 +411,7 @@ function lenient_bignum(x)
 
   local min = math.min
   function math.min(x, y)
-    if type(x) == 'table' or type(y) == 'table' then
+    if is_big(x) or is_big(y) then
     x = to_big(x)
     y = to_big(y)
     if (x < y) then
@@ -424,18 +424,17 @@ function lenient_bignum(x)
 
   local sqrt = math.sqrt
   function math.sqrt(x)
-    if type(x) == 'table' then
-      if getmetatable(x) == BigMeta then return x:sqrt() end
-      if getmetatable(x) == OmegaMeta then return x:pow(0.5) end
+    if is_big(x) then
+      return x:pow(0.5)
     end
     return sqrt(x)
   end
 
- 
+
 
   local old_abs = math.abs
   function math.abs(x)
-    if type(x) == 'table' then
+    if is_big(x) then
     x = to_big(x)
     if (x < to_big(0)) then
       return -1 * x
@@ -446,9 +445,13 @@ function lenient_bignum(x)
   end
 end
 
+function is_big(x)
+  return Big and Big.is(x)
+end
+
 function is_number(x)
   if type(x) == 'number' then return true end
-  if type(x) == 'table' and ((x.e and x.m) or (x.array and x.sign)) then return true end
+  if is_big(x) then return true end
   return false
 end
 
@@ -478,7 +481,7 @@ function to_big(x, y)
   end
 end
 function to_number(x)
-  if type(x) == 'table' and (getmetatable(x) == BigMeta or getmetatable(x) == OmegaMeta) then
+  if Big and Big.is(x) then
     return x:to_number()
   else
     return x
@@ -645,7 +648,7 @@ if not Talisman.F_NO_COROUTINE then
               G.SCORING_TEXT = nil
               if not G.OVERLAY_MENU then
                   G.scoring_text = {localize("talisman_string_D"), "", "", ""}
-                  G.SCORING_TEXT = { 
+                  G.SCORING_TEXT = {
                     {n = G.UIT.C, nodes = {
                       {n = G.UIT.R, config = {padding = 0.1, align = "cm"}, nodes = {
                       {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.scoring_text, ref_value = 1}}, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 1, silent = true})}},
@@ -665,8 +668,8 @@ if not Talisman.F_NO_COROUTINE then
                       })}},
                     }}}
                   G.FUNCS.overlay_menu({
-                      definition = 
-                      {n=G.UIT.ROOT, minw = G.ROOM.T.w*5, minh = G.ROOM.T.h*5, config={align = "cm", padding = 9999, offset = {x = 0, y = -3}, r = 0.1, colour = {G.C.GREY[1], G.C.GREY[2], G.C.GREY[3],0.7}}, nodes= G.SCORING_TEXT}, 
+                      definition =
+                      {n=G.UIT.ROOT, minw = G.ROOM.T.w*5, minh = G.ROOM.T.h*5, config={align = "cm", padding = 9999, offset = {x = 0, y = -3}, r = 0.1, colour = {G.C.GREY[1], G.C.GREY[2], G.C.GREY[3],0.7}}, nodes= G.SCORING_TEXT},
                       config = {align="cm", offset = {x=0,y=0}, major = G.ROOM_ATTACH, bond = 'Weak'}
                   })
               else
@@ -691,9 +694,9 @@ if not Talisman.F_NO_COROUTINE then
         --event queue overhead seems to not exist if Talismans Disable Scoring Animations is off.
         --event manager has to wait for scoring to finish until it can keep processing events anyways.
 
-              
+
               G.LAST_SCORING_YIELD = love.timer.getTime()
-              
+
               local success, msg = coroutine.resume(G.SCORING_COROUTINE)
               if not success then
                 error(msg)
@@ -1136,3 +1139,25 @@ function EventManager:add_event(x,y,z)
   printCallerInfo()
   return emae(self,x,y,z)
 end--]]
+
+function save_run_sanitize(obj, done)
+  if done[obj] then return end
+  done[obj] = true
+
+  for k,v in pairs(obj) do
+    local t = type(v)
+    if t == "table" then
+      save_run_sanitize(v, done)
+    elseif t == 'cdata' then
+      if Big and Big.is(v) then
+        obj[k] = v:as_table()
+      end
+    end
+  end
+end
+
+local save_run_hook = save_run
+function save_run()
+  save_run_hook()
+  save_run_sanitize(G.ARGS.save_run, {})
+end
