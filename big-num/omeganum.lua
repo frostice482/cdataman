@@ -1477,7 +1477,6 @@ function OmegaMeta.__tostring(b)
 end
 
 function OmegaMeta.__concat(a, b)
-    a = Big:ensureBig(a)
     return tostring(a) .. tostring(b)
 end
 
