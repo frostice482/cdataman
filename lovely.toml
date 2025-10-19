@@ -43,129 +43,6 @@ position = "at"
 payload = "{n=G.UIT.T, config={text = number_format(G.GAME.hands[handname].mult, 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}"
 match_indent = true
 
-# Chip requirements for achievements/unlocks
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "if args.chips >= 10000 then"
-position = "at"
-payload = "if to_big(args.chips) >= to_big(10000) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "if args.chips >= 1000000 then"
-position = "at"
-payload = "if to_big(args.chips) >= to_big(1000000) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "if args.chips >= 100000000 then"
-position = "at"
-payload = "if to_big(args.chips) >= to_big(100000000) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "if card.unlock_condition.chips <= args.chips then"
-position = "at"
-payload = "if to_big(card.unlock_condition.chips) <= to_big(args.chips) then"
-match_indent = true
-
-# More comparison issues
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = "if hand_chips*mult > 0 then"
-position = "at"
-payload = "if to_big(hand_chips)*mult > BigC.ZERO then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = "if G.GAME.current_round.current_hand.chip_total < 1 then"
-position = "at"
-payload = "if to_big(G.GAME.current_round.current_hand.chip_total) < BigC.ONE then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = "ease_chips(0)"
-position = "at"
-payload = "ease_chips(BigC.ZERO)"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "game.lua"
-pattern = "chips = 0,"
-position = "at"
-payload = "chips = BigC.ZERO,"
-match_indent = true
-
-# Patch for Steamodded Sound API
-[[patches]]
-[patches.pattern]
-target = "main.lua"
-pattern = "G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
-position = "at"
-payload = "G.ARGS.score_intensity.organ = G.video_organ or to_big(G.ARGS.score_intensity.required_score) > BigC.ZERO and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/misc_functions.lua"
-pattern = "G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
-position = "at"
-payload = "G.ARGS.score_intensity.organ = G.video_organ or to_big(G.ARGS.score_intensity.required_score) > BigC.ZERO and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = "if G.ARGS.score_intensity.earned_score >= G.ARGS.score_intensity.required_score and G.ARGS.score_intensity.required_score > 0 then"
-position = "at"
-payload = "if to_big(G.ARGS.score_intensity.earned_score) >= to_big(G.ARGS.score_intensity.required_score) and to_big(G.ARGS.score_intensity.required_score) > BigC.ZERO then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "game.lua"
-pattern = "if G.GAME.chips - G.GAME.blind.chips >= 0 or G.GAME.current_round.hands_left < 1 then"
-position = "at"
-payload = '''if to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips) or G.GAME.current_round.hands_left < 1 then'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = "if G.GAME.chips - G.GAME.blind.chips >= 0 then"
-position = "at"
-payload = "if to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "blind.lua"
-pattern = "if self.boss and G.GAME.chips - G.GAME.blind.chips >= 0 then"
-position = "at"
-payload = "if self.boss and to_big(G.GAME.chips) - G.GAME.blind.chips >= BigC.ZERO then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = "G.GAME.chips/G.GAME.blind.chips >= 0.25 then"
-position = "at"
-payload = "to_big(G.GAME.chips)/G.GAME.blind.chips >= to_big(0.25) then"
-match_indent = true
-
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -173,7 +50,7 @@ pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.
 position = "at"
 payload = '''
 local num = 0
-if to_big(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1) > to_big(1e300) then
+if to_big(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1) > BigC.BIG then
 	num = math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1))))
 else
 	num = 1e300
@@ -189,7 +66,7 @@ pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.
 position = "at"
 payload = '''
 local num = 0
-if to_big(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1) > to_big(1e300) then
+if to_big(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1) > BigC.BIG then
 	num = math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1))))
 else
 	num = 1e300
@@ -314,119 +191,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = "if not G.ARGS.hand_chip_total_UI_set or G.ARGS.hand_chip_total_UI_set <  G.GAME.current_round.current_hand.chip_total then"
-position = "at"
-payload = "if not G.ARGS.hand_chip_total_UI_set or to_big(G.ARGS.hand_chip_total_UI_set) < to_big(G.GAME.current_round.current_hand.chip_total) then"
-match_indent = true
-
-# For some reason Big leaks into the text engine, this mitigates it
-[[patches]]
-[patches.regex]
-target = "engine/text.lua"
-pattern = '''(?<indent>[\t ]*)if self\.strings\[k\]\.W > self\.config\.W then'''
-position = "before"
-line_prepend = "$indent"
-payload = '''
-if Big then
-	self.strings[k].W = to_number(self.strings[k].W)
-	self.strings[k].H = to_number(self.strings[k].H)
-end
-'''
-
-[[patches]]
-[patches.pattern]
-target = "engine/text.lua"
-pattern = "function DynaText:draw()"
-position = "after"
-payload = '''
-if Big then
-	self.scale = to_number(self.scale)
-	if self.shadow_parallax then self.shadow_parallax.x = to_number(self.shadow_parallax.x) end
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "engine/text.lua"
-pattern = "for k, letter in ipairs(self.strings[self.focused_string].letters) do"
-position = "after" # old DynaText backward compat
-payload = '''
-if Big then
-	letter.dims.x = to_number(letter.dims.x)
-	letter.dims.y = to_number(letter.dims.y)
-	letter.offset.x = to_number(letter.offset.x)
-	letter.offset.y = to_number(letter.offset.y)
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "engine/text.lua"
-pattern = "local letter = self.strings[self.focused_string].letters[k]"
-position = "after" # This is for Aiko's new mod menu interference with DynaText
-payload = '''
-if Big then
-	letter.dims.x = to_number(letter.dims.x)
-	letter.dims.y = to_number(letter.dims.y)
-	letter.offset.x = to_number(letter.offset.x)
-	letter.offset.y = to_number(letter.offset.y)
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "engine/ui.lua"
-pattern = "if _th and _tw then"
-position = "after"
-payload = '''
-if Big then
-	_th = to_number(_th)
-	_tw = to_number(_tw)
-end
-'''
-match_indent = true
-
-#these last few are causing lag, so they'll only be applied in the main menu
-[[patches]]
-[patches.pattern]
-target = "engine/ui.lua"
-pattern = "local _cw, _ch = w:set_wh()"
-position = "after"
-payload = "if Big and G.STATE == G.STATES.MENU then _cw = to_number(_cw); _ch = to_number(_ch) end"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "engine/moveable.lua"
-pattern = "function Moveable:move_wh(dt)"
-position = "after"
-payload = '''
-if Big and G.STATE == G.STATES.MENU then self.T.w = to_number(self.T.w)
-self.T.h = to_number(self.T.h)
-self.VT.w = to_number(self.VT.w)
-self.VT.h = to_number(self.VT.h) end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/misc_functions.lua"
-pattern = "function prep_draw(moveable, scale, rotate, offset)"
-position = "after"
-payload = '''
-if Big and G.STATE == G.STATES.MENU then moveable.VT.x = to_number(moveable.VT.x)
-moveable.VT.y = to_number(moveable.VT.y)
-moveable.VT.w = to_number(moveable.VT.w)
-moveable.VT.h = to_number(moveable.VT.h) end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = "engine/ui.lua"
 pattern = "if self.config.vert then love.graphics.translate(0,self.VT.h); love.graphics.rotate(-math.pi/2) end"
 position = "before"
@@ -447,33 +211,9 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
-pattern = "if args.level >= 10 then"
-position = "at"
-payload = "if to_big(args.level) >= to_big(10) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
 pattern = "if type(vals.level) == 'number' then"
 position = "at"
 payload = "if is_number(vals.level) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.min(vals.level, 7)]"
-position = "at"
-payload = "G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.floor(to_number(math.min(vals.level, 7)))]"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "colours = {(G.GAME.hands[cfg.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[cfg.hand_type].level)])}"
-position = "at"
-payload = "colours = {(to_big(G.GAME.hands[cfg.hand_type].level)==BigC.ONE and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[cfg.hand_type].level)))])}"
 match_indent = true
 
 [[patches]]
@@ -482,65 +222,6 @@ target = "functions/UI_definitions.lua"
 pattern = '{n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.HAND_LEVELS[math.min(7, G.GAME.hands[handname].level)], minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={'
 position = "at"
 payload = '{n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[handname].level)))], minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={'
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = "if ((G.GAME.dollars-G.GAME.bankrupt_at) - G.GAME.current_round.reroll_cost < 0) and G.GAME.current_round.reroll_cost ~= 0 then"
-position = "at"
-payload = '''if ((to_big(G.GAME.dollars)-to_big(G.GAME.bankrupt_at)) - to_big(G.GAME.current_round.reroll_cost) < BigC.ZERO) and G.GAME.current_round.reroll_cost ~= 0 then'''
-match_indent = true
-
-[[patches]]
-[patches.regex]
-target = "functions/button_callbacks.lua"
-pattern = '''e\.config\.ref_table\.cost > G\.GAME\.dollars - G\.GAME\.bankrupt_at'''
-position = "at"
-payload = '''to_big(e.config.ref_table.cost) > to_big(G.GAME.dollars) - to_big(G.GAME.bankrupt_at)'''
-
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''if ((G.GAME.dollars-G.GAME.bankrupt_at) - 10 >= 0) and'''
-position = "at"
-payload = '''
-if ((to_big(G.GAME.dollars)-to_big(G.GAME.bankrupt_at)) - to_big(10) >= BigC.ZERO) and
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''if card.unlock_condition.extra <= G.GAME.dollars then'''
-position = "at"
-payload = '''if to_big(card.unlock_condition.extra) <= to_big(G.GAME.dollars) then'''
-match_indent = true
-
-# Talisman compat for vanilla jokers
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = '''if self.ability.name == 'Bull' and (G.GAME.dollars + (G.GAME.dollar_buffer or 0)) > 0 then'''
-position = "at"
-payload = '''if self.ability.name == 'Bull' and to_big(G.GAME.dollars + (G.GAME.dollar_buffer or 0)) > BigC.ZERO then'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = '''if self.ability.name == 'Bootstraps' and math.floor((G.GAME.dollars + (G.GAME.dollar_buffer or 0))/self.ability.extra.dollars) >= 1 then'''
-position = "at"
-payload = '''if self.ability.name == 'Bootstraps' and to_big(math.floor((G.GAME.dollars + (G.GAME.dollar_buffer or 0))/self.ability.extra.dollars)) >= BigC.ONE then'''
-match_indent = true
-
-# Vagabond
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = '''if G.GAME.dollars <= self.ability.extra then'''
-position = "at"
-payload = '''if to_big(G.GAME.dollars) <= to_big(self.ability.extra) then'''
 match_indent = true
 
 # Luxury Tax Challenge
@@ -567,23 +248,6 @@ target = "functions/common_events.lua"
 pattern = "if num_dollars > 60 or num_dollars < -60 then"
 position = "at"
 payload = '''num_dollars = to_number(num_dollars); if math.abs(to_number(num_dollars)) > 60 then'''
-match_indent = true
-
-# This one also patches some extra stuff, but shouldn't cause any trouble
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "if mod < 0 then"
-position = "at"
-payload = "if to_big(mod) < BigC.ZERO then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "blind.lua"
-pattern = "if G.GAME.hands[handname].level > 1 then"
-position = "at"
-payload = "if to_big(G.GAME.hands[handname].level) > BigC.ONE then"
 match_indent = true
 
 # call init game object appendum after init game object
@@ -1111,123 +775,6 @@ if scoring_hand and scoring_hand[i] and scoring_hand[i].edition then
 end
 '''
 
-# my fix for this one is really scuffed
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = 'if edition_effects.jokers.x_mult_mod then'
-position = 'before'
-match_indent = true
-payload = '''
-if edition_effects.jokers.x_mult_mod then
-	mult = mod_mult(mult*edition_effects.jokers.x_mult_mod)
-	update_hand_text({delay = 0}, {mult = mult})
-	card_eval_status_text(_card, 'jokers', nil, percent, nil, {
-		message = localize{type='variable',key='a_xmult',vars={edition_effects.jokers.x_mult_mod}},
-		x_mult_mod =  edition_effects.jokers.x_mult_mod,
-		colour =  G.C.EDITION,
-		edition = true})
-end
-if G.jokers.cards and G.jokers.cards[i] and G.jokers.cards[i].edition then
-	local trg = G.jokers.cards[i]
-	local edi = trg.edition
-	if edi.x_chips then
-		hand_chips = mod_chips(hand_chips * edi.x_chips)
-		update_hand_text({delay = 0}, {chips = hand_chips})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = 'X'.. edi.x_chips ,
-		edition = true,
-		x_chips = true})
-	end
-	if edi.e_chips then
-		hand_chips = mod_chips(hand_chips ^ edi.e_chips)
-		update_hand_text({delay = 0}, {chips = hand_chips})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = '^'.. edi.e_chips ,
-		edition = true,
-		e_chips = true})
-	end
-	if edi.ee_chips then
-		hand_chips = mod_chips(hand_chips:arrow(2, edi.ee_chips))
-		update_hand_text({delay = 0}, {chips = hand_chips})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = '^^'.. edi.ee_chips ,
-		edition = true,
-		ee_chips = true})
-	end
-	if edi.eee_chips then
-		hand_chips = mod_chips(hand_chips:arrow(3, edi.eee_chips))
-		update_hand_text({delay = 0}, {chips = hand_chips})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = '^^^'.. edi.eee_chips ,
-		edition = true,
-		eee_chips = true})
-	end
-	if edi.hyper_chips and type(edi.hyper_chips) == 'table' then
-		hand_chips = mod_chips(hand_chips:arrow(edi.hyper_chips[1], edi.hyper_chips[2]))
-		update_hand_text({delay = 0}, {chips = hand_chips})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = (edi.hyper_chips[1] > 5 and ('{' .. edi.hyper_chips[1] .. '}') or string.rep('^', edi.hyper_chips[1])) .. edi.hyper_chips[2] ,
-		edition = true,
-		eee_chips = true})
-	end
-	if edi.e_mult then
-		mult = mod_mult(mult ^ edi.e_mult)
-		update_hand_text({delay = 0}, {mult = mult})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = '^'.. edi.e_mult ..' ' .. localize('k_mult'),
-		edition = true,
-		e_mult = true})
-	end
-	if edi.ee_mult then
-		mult = mod_mult(mult:arrow(2, edi.ee_mult))
-		update_hand_text({delay = 0}, {mult = mult})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = '^^'.. edi.ee_mult ..' ' .. localize('k_mult'),
-		edition = true,
-		ee_mult = true})
-	end
-	if edi.eee_mult then
-		mult = mod_mult(mult:arrow(3, edi.eee_mult))
-		update_hand_text({delay = 0}, {mult = mult})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = '^^^'.. edi.eee_mult ..' ' .. localize('k_mult'),
-		edition = true,
-		eee_mult = true})
-	end
-	if edi.hyper_mult and type(edi.hyper_mult) == 'table' then
-		mult = mod_mult(mult:arrow(edi.hyper_mult[1], edi.hyper_mult[2]))
-		update_hand_text({delay = 0}, {mult = mult})
-		card_eval_status_text(trg, 'extra', nil, percent, nil,
-		{message = (edi.hyper_mult[1] > 5 and ('{' .. edi.hyper_mult[1] .. '}') or string.rep('^', edi.hyper_mult[1])) .. edi.hyper_mult[2] ..' ' .. localize('k_mult'),
-		edition = true,
-		hyper_mult = true})
-	end
-end
-edition_effects.jokers.x_mult_mod = nil
-'''
-
-# naneinf crash fixes
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-pattern = "if G.GAME.round_scores[score] and math.floor(amt) > G.GAME.round_scores[score].amt then"
-position = "at"
-payload = '''
-if G.GAME.round_scores[score] and math.floor(amt) > (G.GAME.round_scores[score].amt or 0) then'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'game.lua'
-pattern = "function Game:update_hand_played(dt)"
-position = "after"
-payload = '''
-G.GAME.chips = (G.GAME.chips or 0)
-G.GAME.blind.chips = (G.GAME.blind.chips or math.huge)'''
-match_indent = true
-# Naneinf crash fixes end
-
 # Scoring coroutine
 [[patches]]
 [patches.pattern]
@@ -1240,28 +787,12 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/state_events.lua'
-pattern = '''                       G.STATE_COMPLETE = false
-                        return true
+pattern = '''
+G.STATE_COMPLETE = false
+return true
 '''
 position = 'before'
 payload = 'if G.SCORING_COROUTINE then return false end '
-match_indent = false
-
-# Don't crash in vanilla with big numbers in UI
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-pattern = "assembled_string = assembled_string..(type(subpart) == 'string' and subpart or args.vars[tonumber(subpart[1])] or 'ERROR')"
-position = 'before'
-payload = '''
-if not SMODS and type(subpart) ~= 'string' then
-	if type(args.vars[tonumber(subpart[ 1 ])]) ~= 'number' then
-		args.vars[tonumber(subpart[ 1 ])] = tostring(args.vars[tonumber(subpart[ 1 ])])
-	else
-		args.vars[tonumber(subpart[ 1 ])] = number_format(args.vars[tonumber(subpart[ 1 ])], 1000000)
-	end
-end
-'''
 match_indent = false
 
 # Patch save manager to do Talisman things
@@ -1304,29 +835,6 @@ pattern = "type = 'save_run',"
 position = 'after'
 payload = 'talisman = Talisman.config_file.break_infinity,'
 match_indent = true
-
-# Fix some card_eval_status_text crashes
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = "if amt > 0 or amt < 0 then"
-position = 'at'
-payload = "if to_big(amt) > BigC.ZERO or to_big(amt) < BigC.ZERO then"
-match_indent = true
-
-[[patches]]
-[patches.regex]
-target = "functions/common_events.lua"
-pattern = 'amt<0'
-position = 'at'
-payload = 'to_big(amt)<BigC.ZERO'
-
-[[patches]]
-[patches.regex]
-target = '=[SMODS _ "src/utils.lua"]'
-pattern = '= amount > 0'
-position = 'at'
-payload = '= to_big(amount) > BigC.ZERO'
 
 # Fully split up evaluate_play
 # This allows mods' lovely patches to still work fine while also letting Talisman's abort feature work
@@ -1402,62 +910,6 @@ function evaluate_play_after(text, disp_text, poker_hands, scoring_hand, non_loc
 '''
 match_indent = true
 
-# Let shaders not use bignums
-[[patches]]
-[patches.pattern]
-target = 'engine/sprite.lua'
-pattern = "G.SHADERS[_shader]:send(v.name, v.val or (v.func and v.func()) or v.ref_table[v.ref_value])"
-position = 'at'
-payload = '''local val = v.val or (v.func and v.func()) or v.ref_table[v.ref_value]
-if is_big(val) then
-	if val > to_big(1e300) then
-		val = 1e300
-	else
-		val = val:tonumber()
-	end
-end
-G.SHADERS[_shader]:send(v.name, val)'''
-match_indent = true
-
-# Let ambient sounds not use bignums
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-pattern = "AC[k].vol = (not G.video_organ and G.STATE == G.STATES.SPLASH) and 0 or AC[k].vol and v.volfunc(AC[k].vol) or 0"
-position = 'after'
-payload = '''
-if is_big(AC[k].vol) then
-	if AC[k].vol > to_big(1e300) then
-		AC[k].vol = 1e300
-	else
-		AC[k].vol = to_number(AC[k].vol)
-	end
-end
-if is_big(AC[k].per) then
-	if AC[k].per > to_big(1e300) then
-		AC[k].per = 1e300
-	else
-		AC[k].per = to_number(AC[k].per)
-	end
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/button_callbacks.lua'
-pattern = "_F.intensity = ((G.pack_cards and not G.pack_cards.REMOVED) or (G.TAROT_INTERRUPT)) and 0 or math.max(0., math.log(G.ARGS.score_intensity.earned_score, 5)-2)"
-position = 'after'
-payload = '''if is_big(_F.intensity) then
-	if _F.intensity > to_big(1e300) then
-		_F.intensity = 1e300
-	else
-		_F.intensity = to_number(_F.intensity)
-	end
-end
-'''
-match_indent = true
-
 # G.funcs.evaluate_play()
 [[patches]]
 [patches.pattern]
@@ -1506,28 +958,3 @@ G.ARGS.score_intensity.earned_score = SMODS.calculate_round_score(true)
 payload = '''
 G.ARGS.score_intensity.earned_score = math.min(to_number(SMODS.calculate_round_score(true)), 1e300)
 '''
-
-# evaluate_play_final_scoring comparison
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = '''
-if  SMODS.calculate_round_score()  > 0 then
-'''
-position = '''at'''
-payload = '''
-if  to_big(SMODS.calculate_round_score())  > BigC.ZERO then
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = '''
-SMODS.last_hand_oneshot = SMODS.calculate_round_score() > G.GAME.blind.chips
-'''
-position = '''at'''
-payload = '''
-SMODS.last_hand_oneshot = to_big(SMODS.calculate_round_score()) > to_big(G.GAME.blind.chips)
-'''
-match_indent = true
