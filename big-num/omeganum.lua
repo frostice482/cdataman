@@ -680,11 +680,12 @@ function Big:ensureBig(input)
 end
 
 --- @param self t.Omega
+--- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:add(other)
     local x = self:as_table()
     local other_m = Big:ensureBig(other)
-    other = other_m:as_table()
+    local other = other_m:as_table()
     -- if (OmegaNum.debug>=OmegaNum.NORMAL){
     --   console.log(this+"+"+other);
     --   if (!debugMessageSent) console.warn(omegaNumError+"Debug output via 'debug' is being deprecated and will be removed in the future!"),debugMessageSent=true;
@@ -711,9 +712,9 @@ function Big:add(other)
         return other_m
     end
     local pw=self:min(other_m);
-    local p=x:as_table();
+    local p=pw:as_table();
     local qw=self:max(other_m);
-    local q=x:as_table();
+    local q=qw:as_table();
     local t = B.NEG_ONE;
     if (p.array[2] == 2) and not p:gt(B.E_MAX_SAFE_INTEGER) then
         p.array[2] = 1
@@ -723,7 +724,7 @@ function Big:add(other)
         q.array[2] = 1
         q.array[1] = 10 ^ q.array[1]
     end
-    if (q:gt(B.E_MAX_SAFE_INTEGER) or qw:div(p):gt(B.MAX_SAFE_INTEGER)) then
+    if (q:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
         t = qw;
     elseif (q.array[2] == nil) or (q.array[2] == 0) then
         t= Big:create(x:to_number()+other:to_number());
@@ -768,9 +769,9 @@ function Big:sub(other)
         return other:neg()
     end
     local pw=x:min(other);
-    local p=x:as_table();
+    local p=pw:as_table();
     local qw=x:max(other);
-    local q=x:as_table();
+    local q=qw:as_table();
     local n = other:gt(x);
     local t = B.NEG_ONE;
     if (p.array[2] == 2) and not p:gt(B.E_MAX_SAFE_INTEGER) then
@@ -781,7 +782,7 @@ function Big:sub(other)
         q.array[2] = 1
         q.array[1] = 10 ^ q.array[1]
     end
-    if (q:gt(B.E_MAX_SAFE_INTEGER) or qw:div(p):gt(B.MAX_SAFE_INTEGER)) then
+    if (q:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
         t = qw;
         if n then
             t = t:neg()
@@ -809,6 +810,7 @@ function Big:sub(other)
 end
 
 --- @param self t.Omega
+--- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:div(other)
     local x = self;
@@ -856,6 +858,7 @@ function Big:div(other)
     return pw
 end
 
+--- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:mul(other)
     local x = Big:ensureBig(self);
@@ -948,6 +951,7 @@ function Big:ln()
 end
 
 --- @param self t.Omega
+--- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:pow(other)
     other = Big:ensureBig(other);
@@ -1002,12 +1006,14 @@ function Big:pow(other)
     return B.TEN:pow(self:log10():mul(other));
 end
 
+--- @param self t.Omega
 --- @return t.Omega
 function Big:exp()
     return B.E:pow(self)
 end
 
 --- @param self t.Omega
+--- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:root(other)
     other = Big:ensureBig(other)
