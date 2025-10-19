@@ -629,7 +629,7 @@ function Big:add(other)
         return x:clone();
     end
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
-        return Big:create(B.NaN);
+        return B.NaN;
     end
     if (x:isInfinite()) then
         return x:clone();
@@ -676,13 +676,13 @@ function Big:sub(other)
         return x:add(other:neg())
     end
     if (x:eq(other)) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if (other:eq(B.ZERO)) then
         return x:clone();
     end
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (x:isInfinite()) then
         return x:clone()
@@ -740,35 +740,35 @@ function Big:div(other)
         return x:abs():div(other:abs())
     end
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (other:eq(B.ZERO)) then
-        return Big:create(B.POSITIVE_INFINITY)
+        return B.POSITIVE_INFINITY
     end
     if (other:eq(B.ONE)) then
         return x:clone()
     end
     if (x:eq(other)) then
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if (x:isInfinite()) then
         return x:clone()
     end
     if (other:isInfinite()) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if (x:max(other):gt(B.EE_MAX_SAFE_INTEGER)) then
         if x:gt(other) then
             return x:clone()
         else
-            return Big:create(B.ZERO)
+            return B.ZERO
         end
     end
     local n = x:to_number()/other:to_number();
     if (n<=MAX_SAFE_INTEGER) then
         return Big:create(n)
     end
-    local pw = Big:create(10):pow(x:log10():sub(other:log10()))
+    local pw = B.TEN:pow(x:log10():sub(other:log10()))
     local fp = pw:floor()
     if (pw:sub(fp):lt(Big:create(1e-9))) then
         return fp
@@ -787,10 +787,10 @@ function Big:mul(other)
         return x:abs():mul(other:abs())
     end
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (other:eq(B.ZERO)) or x:eq(B.ZERO) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if (other:eq(B.ONE)) then
         return x:clone()
@@ -811,22 +811,22 @@ function Big:mul(other)
     if (n<=MAX_SAFE_INTEGER) then
         return Big:create(n)
     end
-    return Big:create(10):pow(x:log10():add(other:log10()));
+    return B.TEN:pow(x:log10():add(other:log10()));
 end
 
 function Big:rec()
     if (self:isNaN() or self:eq(B.ZERO)) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (self:abs():gt("2e323")) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
-    return Big:create(B.ONE):div(self)
+    return B.ONE:div(self)
 end
 
 function Big:logBase(base)
     if base == nil then
-        base = Big:create(B.E)
+        base = B.E
     end
     return self:log10():div(base:log10())
 end
@@ -835,10 +835,10 @@ function Big:log10()
     local x = self;
     -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log("log"+this);
     if (x:lt(B.ZERO)) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (x:eq(B.ZERO)) then
-        return Big:create(B.NEGATIVE_INFINITY)
+        return B.NEGATIVE_INFINITY
     end
     if (x:lte(B.MAX_SAFE_INTEGER)) then
         return Big:create(math.log(x:to_number(), 10))
@@ -855,7 +855,7 @@ function Big:log10()
 end
 
 function Big:ln()
-    base = Big:create(B.E)
+    base = B.E
     return self:log10():div(base:log10())
 end
 
@@ -863,7 +863,7 @@ function Big:pow(other)
     other = Big:ensureBig(other);
     -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(this+"^"+other);
     if (other:eq(B.ZERO)) then
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if (other:eq(B.ONE)) then
         return self:clone()
@@ -878,15 +878,15 @@ function Big:pow(other)
         return self:abs():pow(other):neg()
     end
     if (self:lt(B.ZERO)) then
-        --return Big:create(B.NaN)
+        --return B.NaN
         --Override this interaction to always make positive numbers
         return self:abs():pow(other)
     end
     if (self:eq(B.ONE)) then
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if (self:eq(B.ZERO)) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if (self:max(other):gt(B.TETRATED_MAX_SAFE_INTEGER)) then
         return self:max(other);
@@ -908,7 +908,7 @@ function Big:pow(other)
     if (n<=MAX_SAFE_INTEGER) then
         return Big:create(n);
     end
-    return Big:create(10):pow(self:log10():mul(other));
+    return B.TEN:pow(self:log10():mul(other));
 end
 
 function Big:exp()
@@ -931,22 +931,22 @@ function Big:root(other)
         return self:neg():root(other):neg()
     end
     if (self:lt(B.ZERO)) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (self:eq(B.ONE)) then
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if (self:eq(B.ZERO)) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if (self:max(other):gt(B.TETRATED_MAX_SAFE_INTEGER)) then
         if self:gt(other) then
             return self:clone()
         else
-            Big:create(B.ZERO)
+            return B.ZERO
         end
     end
-    return Big:create(10):pow(self:log10():div(other));
+    return B.TEN:pow(self:log10():div(other));
 end
 
 function Big:slog(base)
@@ -956,37 +956,37 @@ function Big:slog(base)
     local x = self
     base = Big:ensureBig(base)
     if (x:isNaN() or base:isNaN() or (x:isInfinite() and base:isInfinite())) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (x:isInfinite()) then
         return x:clone();
     end
     if (base:isInfinite()) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if (x:lt(B.ZERO)) then
         return Big:create(-R.ONE)
     end
     if (x:lt(B.ONE)) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if (x:eq(base)) then
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if (base:lt(math.exp(1/R.E))) then
         local a = base:tetrate(1/0)
         if (x:eq(a)) then
-            return Big:create(B.POSITIVE_INFINITY)
+            return B.POSITIVE_INFINITY
         end
         if (x:gt(a)) then
-            return Big:create(B.NaN)
+            return B.NaN
         end
     end
     if (x:max(base):gt("10^^^" .. R.MAX_SAFE_INTEGER)) then
         if (x:gt(base)) then
             return x:clone();
         end
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if (x:max(base):gt(B.TETRATED_MAX_SAFE_INTEGER)) then
         if x:gt(base) then
@@ -995,7 +995,7 @@ function Big:slog(base)
             x:normalize()
             return x:sub(x.array[2])
         end
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     x = x:clone()
     local r = 0
@@ -1027,35 +1027,35 @@ function Big:tetrate(other)
     other = Big:ensureBig(other)
     local negln = nil
     if (t:isNaN() or other:isNaN()) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (other:isInfinite() and other.sign > 0) then
         negln = t:ln():neg()
         return negln:lambertw():div(negln)
     end
     if (other:lte(-2)) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (t:eq(B.ZERO)) then
         if (other:eq(B.ZERO)) then
-            return Big:create(B.NaN)
+            return B.NaN
         end
         if (other:mod(2):eq(B.ZERO)) then
-            return Big:create(B.ZERO)
+            return B.ZERO
         end
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if (t:eq(B.ONE)) then
         if (other:eq(-1)) then
-            return Big:create(B.NaN)
+            return B.NaN
         end
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if (other:eq(-1)) then
-        return Big:create(B.ZERO)
+        return B.ZERO
     end
     if other:eq(B.ZERO) then
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if other:eq(B.ONE) then
         return t:clone()
@@ -1170,10 +1170,10 @@ function Big:arrow(arrows, other)
     --idk why but arrows above 1e6 just sometimes randomly get treated as non ints even though they are
     --this is technically inaccurate now but i think 1e7 +0.1 counting as an integer amount of arrow here is fine
     if (not arrows:isint() or arrows:lt(B.ZERO)) and arrows:lt(1e6) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if type(oldarrows) == "number" and oldarrows ~= math.floor(oldarrows) and oldarrows < 1e6 then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if arrows:eq(B.ZERO) then
         return t:mul(other)
@@ -1186,10 +1186,10 @@ function Big:arrow(arrows, other)
     end
     other = Big:create(other)
     if (other:lt(B.ZERO)) then
-        return Big:create(B.NaN)
+        return B.NaN
     end
     if (other:eq(B.ZERO)) then
-        return Big:create(B.ONE)
+        return B.ONE
     end
     if (other:eq(B.ONE)) then
         return t:clone()
@@ -1201,7 +1201,7 @@ function Big:arrow(arrows, other)
         return Big:create(4)
     end
     --[[if (arrows:gte(maxArrow)) then
-        return Big:create(B.POSITIVE_INFINITY)
+        return B.POSITIVE_INFINITY
     end--]]
 
     --remove potential error from before
@@ -1236,7 +1236,7 @@ function Big:arrow(arrows, other)
         elseif (t:gt(limit_minus)) then
             r = Big:create(t.array[arrowsNum])
         else
-            r = Big:create(B.ZERO)
+            r = B.ZERO
         end
         local j = r:add(other)
         j.array[arrowsNum+1] = (j.array[arrowsNum+1] or 0) + 1
@@ -1267,7 +1267,7 @@ end
 function Big:mod(other)
     other = Big:ensureBig(other)
     if (other:eq(B.ZERO)) then
-        Big:create(B.ZERO)
+        return B.NaN
     end
     if (self.sign*other.sign == -1) then
         return self:abs():mod(other:abs()):neg()
