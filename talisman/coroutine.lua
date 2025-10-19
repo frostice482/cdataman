@@ -147,6 +147,8 @@ Talisman.calculating_score = false
 Talisman.calculating_card = false
 Talisman.dollar_update = false
 
+local counter = 0
+
 local ccj = Card.calculate_joker
 function Card:calculate_joker(context)
 	--scoring coroutine
@@ -158,8 +160,14 @@ function Card:calculate_joker(context)
 		G.CARD_CALC_COUNTS[self] = { 1, 1 }
 	end
 
-	if G.LAST_SCORING_YIELD and ((love.timer.getTime() - G.LAST_SCORING_YIELD) > Talisman.TIME_BETWEEN_SCORING_FRAMES) and coroutine.running() then
-		coroutine.yield()
+	if not Talisman.F_NO_COROUTINE then
+		counter = counter + 1
+		if counter >= 250 then
+			if G.LAST_SCORING_YIELD and (love.timer.getTime() - G.LAST_SCORING_YIELD) > Talisman.TIME_BETWEEN_SCORING_FRAMES and coroutine.running() then
+				coroutine.yield()
+			end
+			counter = 0
+		end
 	end
 	Talisman.calculating_joker = true
 	local ret, trig = ccj(self, context)
