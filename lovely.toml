@@ -82,7 +82,7 @@ match_indent = true
 target = "functions/state_events.lua"
 pattern = "if hand_chips*mult > 0 then"
 position = "at"
-payload = "if to_big(hand_chips)*mult > to_big(0) then"
+payload = "if to_big(hand_chips)*mult > BigC.ZERO then"
 match_indent = true
 
 [[patches]]
@@ -90,7 +90,7 @@ match_indent = true
 target = "functions/button_callbacks.lua"
 pattern = "if G.GAME.current_round.current_hand.chip_total < 1 then"
 position = "at"
-payload = "if to_big(G.GAME.current_round.current_hand.chip_total) < to_big(1) then"
+payload = "if to_big(G.GAME.current_round.current_hand.chip_total) < BigC.ONE then"
 match_indent = true
 
 [[patches]]
@@ -98,7 +98,7 @@ match_indent = true
 target = "functions/button_callbacks.lua"
 pattern = "ease_chips(0)"
 position = "at"
-payload = "ease_chips(to_big(0))"
+payload = "ease_chips(BigC.ZERO)"
 match_indent = true
 
 [[patches]]
@@ -106,7 +106,7 @@ match_indent = true
 target = "game.lua"
 pattern = "chips = 0,"
 position = "at"
-payload = "chips = to_big(0),"
+payload = "chips = BigC.ZERO,"
 match_indent = true
 
 # Patch for Steamodded Sound API
@@ -115,7 +115,7 @@ match_indent = true
 target = "main.lua"
 pattern = "G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
 position = "at"
-payload = "G.ARGS.score_intensity.organ = G.video_organ or to_big(G.ARGS.score_intensity.required_score) > to_big(0) and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
+payload = "G.ARGS.score_intensity.organ = G.video_organ or to_big(G.ARGS.score_intensity.required_score) > BigC.ZERO and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
 match_indent = true
 
 [[patches]]
@@ -123,7 +123,7 @@ match_indent = true
 target = "functions/misc_functions.lua"
 pattern = "G.ARGS.score_intensity.organ = G.video_organ or G.ARGS.score_intensity.required_score > 0 and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
 position = "at"
-payload = "G.ARGS.score_intensity.organ = G.video_organ or to_big(G.ARGS.score_intensity.required_score) > to_big(0) and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
+payload = "G.ARGS.score_intensity.organ = G.video_organ or to_big(G.ARGS.score_intensity.required_score) > BigC.ZERO and math.max(math.min(0.4, 0.1*math.log(G.ARGS.score_intensity.earned_score/(G.ARGS.score_intensity.required_score+1), 5)),0.) or 0"
 match_indent = true
 
 [[patches]]
@@ -131,7 +131,7 @@ match_indent = true
 target = "functions/button_callbacks.lua"
 pattern = "if G.ARGS.score_intensity.earned_score >= G.ARGS.score_intensity.required_score and G.ARGS.score_intensity.required_score > 0 then"
 position = "at"
-payload = "if to_big(G.ARGS.score_intensity.earned_score) >= to_big(G.ARGS.score_intensity.required_score) and to_big(G.ARGS.score_intensity.required_score) > to_big(0) then"
+payload = "if to_big(G.ARGS.score_intensity.earned_score) >= to_big(G.ARGS.score_intensity.required_score) and to_big(G.ARGS.score_intensity.required_score) > BigC.ZERO then"
 match_indent = true
 
 [[patches]]
@@ -155,7 +155,7 @@ match_indent = true
 target = "blind.lua"
 pattern = "if self.boss and G.GAME.chips - G.GAME.blind.chips >= 0 then"
 position = "at"
-payload = "if self.boss and to_big(G.GAME.chips) - G.GAME.blind.chips >= to_big(0) then"
+payload = "if self.boss and to_big(G.GAME.chips) - G.GAME.blind.chips >= BigC.ZERO then"
 match_indent = true
 
 [[patches]]
@@ -243,7 +243,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "if delta < 0 then delta = ''..delta; col = G.C.RED"
 position = "at"
-payload = "if to_big(delta) < to_big(0) then delta = number_format(delta); col = G.C.RED"
+payload = "if to_big(delta) < BigC.ZERO then delta = number_format(delta); col = G.C.RED"
 match_indent = true
 
 [[patches]]
@@ -251,7 +251,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "elseif delta > 0 then delta = '+'..delta"
 position = "at"
-payload = "elseif to_big(delta) > to_big(0) then delta = '+'..number_format(delta)"
+payload = "elseif to_big(delta) > BigC.ZERO then delta = '+'..number_format(delta)"
 match_indent = true
 
 [[patches]]
@@ -473,7 +473,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "colours = {(G.GAME.hands[cfg.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[cfg.hand_type].level)])}"
 position = "at"
-payload = "colours = {(to_big(G.GAME.hands[cfg.hand_type].level)==to_big(1) and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[cfg.hand_type].level)))])}"
+payload = "colours = {(to_big(G.GAME.hands[cfg.hand_type].level)==BigC.ONE and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[cfg.hand_type].level)))])}"
 match_indent = true
 
 [[patches]]
@@ -484,28 +484,12 @@ position = "at"
 payload = '{n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[handname].level)))], minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={'
 match_indent = true
 
-# money fixes
-[[patches]]
-[patches.regex]
-target = "functions/state_events.lua"
-pattern = '''G\.GAME\.dollars >= 5'''
-position = "at"
-payload = "to_big(G.GAME.dollars) >= to_big(5)"
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "if G.GAME.dollars >= 400 then"
-position = "at"
-payload = '''if to_big(G.GAME.dollars) >= to_big(400) then'''
-match_indent = true
-
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
 pattern = "if ((G.GAME.dollars-G.GAME.bankrupt_at) - G.GAME.current_round.reroll_cost < 0) and G.GAME.current_round.reroll_cost ~= 0 then"
 position = "at"
-payload = '''if ((to_big(G.GAME.dollars)-to_big(G.GAME.bankrupt_at)) - to_big(G.GAME.current_round.reroll_cost) < to_big(0)) and G.GAME.current_round.reroll_cost ~= 0 then'''
+payload = '''if ((to_big(G.GAME.dollars)-to_big(G.GAME.bankrupt_at)) - to_big(G.GAME.current_round.reroll_cost) < BigC.ZERO) and G.GAME.current_round.reroll_cost ~= 0 then'''
 match_indent = true
 
 [[patches]]
@@ -521,7 +505,7 @@ target = "functions/button_callbacks.lua"
 pattern = '''if ((G.GAME.dollars-G.GAME.bankrupt_at) - 10 >= 0) and'''
 position = "at"
 payload = '''
-if ((to_big(G.GAME.dollars)-to_big(G.GAME.bankrupt_at)) - to_big(10) >= to_big(0)) and
+if ((to_big(G.GAME.dollars)-to_big(G.GAME.bankrupt_at)) - to_big(10) >= BigC.ZERO) and
 '''
 match_indent = true
 
@@ -539,7 +523,7 @@ match_indent = true
 target = "card.lua"
 pattern = '''if self.ability.name == 'Bull' and (G.GAME.dollars + (G.GAME.dollar_buffer or 0)) > 0 then'''
 position = "at"
-payload = '''if self.ability.name == 'Bull' and to_big(G.GAME.dollars + (G.GAME.dollar_buffer or 0)) > to_big(0) then'''
+payload = '''if self.ability.name == 'Bull' and to_big(G.GAME.dollars + (G.GAME.dollar_buffer or 0)) > BigC.ZERO then'''
 match_indent = true
 
 [[patches]]
@@ -547,7 +531,7 @@ match_indent = true
 target = "card.lua"
 pattern = '''if self.ability.name == 'Bootstraps' and math.floor((G.GAME.dollars + (G.GAME.dollar_buffer or 0))/self.ability.extra.dollars) >= 1 then'''
 position = "at"
-payload = '''if self.ability.name == 'Bootstraps' and to_big(math.floor((G.GAME.dollars + (G.GAME.dollar_buffer or 0))/self.ability.extra.dollars)) >= to_big(1) then'''
+payload = '''if self.ability.name == 'Bootstraps' and to_big(math.floor((G.GAME.dollars + (G.GAME.dollar_buffer or 0))/self.ability.extra.dollars)) >= BigC.ONE then'''
 match_indent = true
 
 # Vagabond
@@ -591,7 +575,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "if mod < 0 then"
 position = "at"
-payload = "if to_big(mod) < to_big(0) then"
+payload = "if to_big(mod) < BigC.ZERO then"
 match_indent = true
 
 [[patches]]
@@ -599,7 +583,7 @@ match_indent = true
 target = "blind.lua"
 pattern = "if G.GAME.hands[handname].level > 1 then"
 position = "at"
-payload = "if to_big(G.GAME.hands[handname].level) > to_big(1) then"
+payload = "if to_big(G.GAME.hands[handname].level) > BigC.ONE then"
 match_indent = true
 
 # call init game object appendum after init game object
@@ -1327,7 +1311,7 @@ match_indent = true
 target = 'functions/common_events.lua'
 pattern = "if amt > 0 or amt < 0 then"
 position = 'at'
-payload = "if to_big(amt) > to_big(0) or to_big(amt) < to_big(0) then"
+payload = "if to_big(amt) > BigC.ZERO or to_big(amt) < BigC.ZERO then"
 match_indent = true
 
 [[patches]]
@@ -1335,14 +1319,14 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = 'amt<0'
 position = 'at'
-payload = 'to_big(amt)<to_big(0)'
+payload = 'to_big(amt)<BigC.ZERO'
 
 [[patches]]
 [patches.regex]
 target = '=[SMODS _ "src/utils.lua"]'
 pattern = '= amount > 0'
 position = 'at'
-payload = '= to_big(amount) > to_big(0)'
+payload = '= to_big(amount) > BigC.ZERO'
 
 # Fully split up evaluate_play
 # This allows mods' lovely patches to still work fine while also letting Talisman's abort feature work
@@ -1532,7 +1516,7 @@ if  SMODS.calculate_round_score()  > 0 then
 '''
 position = '''at'''
 payload = '''
-if  to_big(SMODS.calculate_round_score())  > to_big(0) then
+if  to_big(SMODS.calculate_round_score())  > BigC.ZERO then
 '''
 match_indent = true
 

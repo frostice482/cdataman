@@ -94,10 +94,11 @@ end
 
 function Big:new(arr)
     local obj = TalismanOmega()
-    obj.array = arr
-    obj.sign = 1
-    obj:normalize()
-    obj.where = debug.traceback()
+    bigs[obj] = {
+        array = arr,
+        sign = 1
+    }
+    Big.normalize(bigs[obj])
     return obj
 end
 
@@ -236,14 +237,14 @@ end
 function Big:normalize()
     local b = nil
     local x = self
-    if ((x.array == nil) or (type(x.array) ~= "table") or (x:arraySize() == 0)) then
+    if ((x.array == nil) or (type(x.array) ~= "table") or (Big.arraySize(x) == 0)) then
         x.array = {0}
     end
-    if (x:arraySize() == 1) and (x.array[1] == 0) then
+    if (Big.arraySize(x) == 1) and (x.array[1] == 0) then
         x.sign = 1
         return x
     end
-    if (x:arraySize() == 1) and (x.array[1] < 0) then
+    if (Big.arraySize(x) == 1) and (x.array[1] < 0) then
         x.sign = -1
         x.array[1] = -x.array[1]
     end
@@ -278,8 +279,8 @@ function Big:normalize()
     while (doOnce or b) do
     --   if (OmegaNum.debug>=OmegaNum.ALL) console.log(x.toString());
         b=false;
-        while ((x:arraySize() ~= 0) and (x.array[x:arraySize()]==0)) do
-            x.array[x:arraySize()] = nil;
+        while ((Big.arraySize(x) ~= 0) and (x.array[Big.arraySize(x)]==0)) do
+            x.array[Big.arraySize(x)] = nil;
             b=true;
         end
         if ((x.array[1] or 0) > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
@@ -317,7 +318,7 @@ function Big:normalize()
             end
         end
     end
-    if (x:arraySize() == 0) then
+    if (Big.arraySize(x) == 0) and #x.array ~= 1 then
         x.array = {0}
     end
     return x;
