@@ -15,7 +15,7 @@ end
 
 local uht = update_hand_text
 function update_hand_text(config, vals)
-    if not Talisman.config_file.disable_anims then return uht(config, vals) end
+    if not Talisman.config_file.disable_anims then uht(config, vals) end
     if G.latest_uht then
       local chips = G.latest_uht.vals.chips
       local mult = G.latest_uht.vals.mult
