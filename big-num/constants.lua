@@ -3,6 +3,7 @@ local R = {}
 
 R.ZERO = 0
 R.ONE = 1
+R.NEG_ONE = 1
 R.TEN = 10
 R.E = math.exp(1)
 R.LN2 = math.log(2, R.E)

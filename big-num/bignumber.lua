@@ -3,8 +3,9 @@ local ffi = require("ffi")
 ffi.cdef[[ struct TalismanBig { double m; double e; }; ]]
 local TalismanBig = ffi.typeof("struct TalismanBig")
 
-local Big = { m = 0, e = 0 }
-local BigMeta = { __index = Big }
+--- @class talisman.Big
+local Big = { m = 0, e = 0, array = false }
+BigMeta = { __index = Big }
 
 function Big.is(instance)
     return type(instance) == "cdata" and ffi.istype(instance, TalismanBig)

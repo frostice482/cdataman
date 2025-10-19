@@ -8,9 +8,9 @@ BigC = {
     NBIG = -1e308
 }
 
-Big, err = nativefs.load(Talisman.mod_path .. "/big-num/" .. Talisman.config_file.break_infinity .. ".lua")
+local _Big, err = nativefs.load(Talisman.mod_path .. "/big-num/" .. Talisman.config_file.break_infinity .. ".lua")
 if not err then
-    Big = Big()
+    Big = _Big()
     for k,v in pairs(BigC) do
         BigC[k] = Big:new(v)
     end
@@ -39,10 +39,11 @@ local nf = number_format
 function number_format(num, e_switch_point)
     if not is_big(num) then return nf(num, e_switch_point) end
 
-    if num.str then return num.str end
+    local low = num:as_table()
+    if low.str then return low.str end
     if num:arraySize() > 2 then
         local str = Notations.Balatro:format(num, 3)
-        num.str = str
+        low.str = str
         return str
     end
 
@@ -205,25 +206,29 @@ function scale_number(number, scale, max, e_switch_point)
     if not Big then return sn(number, scale, max, e_switch_point) end
 
     if not max then max = 10000 end
-    if type(scale) ~= "table" then
-        scale = to_big(scale) end
-    if type(number) ~= "table" then
+    if not is_big(scale) then
+        scale = to_big(scale)
+    end
+    if not is_big(number) then
         number = Big:ensureBig(number)
     end
-    if number.scale then return number.scale end
-    if number.e and number.e == 10 ^ 1000 then
+
+    local nl = number:as_table()
+
+    if nl.scale then return nl.scale end
+    if nl.e and nl.e == 10 ^ 1000 then
         scale = scale * math.floor(math.log(max * 10, 10)) / 7
     end
 
     if not e_switch_point and number:arraySize() > 2 then             --this is noticable faster than >= on the raw number for some reason
-        if number:arraySize() <= 2 and (number.array[1] or 0) <= 999 then --gross hack
+        if number:arraySize() <= 2 and (number:get_array()[1] or 0) <= 999 then --gross hack
             scale = scale * math.floor(math.log(max * 10, 10)) / 7    --this divisor is a constant so im precalcualting it
         else
             scale = scale * math.floor(math.log(max * 10, 10)) /
-            math.floor(math.max(7, string.len(number.str or number_format(number)) - 1))
+            math.floor(math.max(7, string.len(nl.str or number_format(number)) - 1))
         end
     elseif to_big(number) >= (e_switch_point and to_big(e_switch_point) or G.E_SWITCH_POINT) then
-        if number:arraySize() <= 2 and (number.array[1] or 0) <= 999 then --gross hack
+        if number:arraySize() <= 2 and (number:get_array()[1] or 0) <= 999 then --gross hack
             scale = scale * math.floor(math.log(max * 10, 10)) / 7    --this divisor is a constant so im precalcualting it
         else
             scale = scale * math.floor(math.log(max * 10, 10)) /
@@ -234,7 +239,7 @@ function scale_number(number, scale, max, e_switch_point)
     end
 
     scale = math.min(3, scale:to_number())
-    number.scale = scale
+    nl.scale = scale
     return scale
 end
 

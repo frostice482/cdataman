@@ -77,6 +77,7 @@ function is_number(x)
   return false
 end
 
+--- @return t.Omega | talisman.Big | number
 function to_big(x, y)
   if type(x) == 'string' and x == "0" then --hack for when 0 is asked to be a bignumber need to really figure out the fix
     return 0
@@ -85,7 +86,7 @@ function to_big(x, y)
     return x
   elseif Big and Big.array then
     local result = Big:create(x)
-    result.sign = y or result.sign or x.sign or 1
+    if y then result:as_table().sign = y end
     return result
   elseif is_number(x) then
     return x * 10^(y or 0)

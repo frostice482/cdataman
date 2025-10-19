@@ -12,7 +12,9 @@ function BalaNotation:new()
     return setmetatable({}, BalaNotation)
 end
 
-function BalaNotation:format(n, places)
+--- @param l t.Omega
+function BalaNotation:format(l, places)
+    local n = l:as_table()
     --vanilla balatro number_format function basically
     local function e_ify(num)
         --if not num then return "0" end
@@ -27,9 +29,9 @@ function BalaNotation:format(n, places)
         return string.format(num ~= math.floor(num) and (num >= 100 and "%.0f" or num >= 10 and "%.1f" or "%.2f") or "%.0f", num):reverse():gsub("(%d%d%d)", "%1,"):gsub(",$", ""):reverse()
     end
     --The notation here is Hyper-E notation, but with lowercase E.
-    if to_big(n:log10()) < to_big(1000000) then
+    if to_big(l:log10()) < to_big(1000000) then
         --1.234e56789
-        if n.m then --BigNum
+        if false then --BigNum
             local mantissa = math.floor(n.m*10^places+0.5)/10^places
             local exponent = n.e
             return mantissa.."e"..e_ify(exponent)
@@ -44,9 +46,9 @@ function BalaNotation:format(n, places)
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
             return (n.sign == -1 and "-" or "")..mantissa.."e"..e_ify(exponent)
         end
-    elseif to_big(n:log10()) < to_big(10)^1000000 then
+    elseif to_big(l:log10()) < to_big(10)^1000000 then
         --e1.234e56789
-        if n.m then --BigNum
+        if false then --BigNum
             local exponent = math.floor(math.log(n.e,10))
             local mantissa = n.e/10^exponent
             mantissa = math.floor(mantissa*10^places+0.5)/10^places

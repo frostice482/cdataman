@@ -40,10 +40,8 @@ local function save_run_sanitize(obj, done)
     local t = type(v)
     if t == "table" then
       save_run_sanitize(v, done)
-    elseif t == 'cdata' then
-      if Big and Big.is(v) then
-        obj[k] = v:as_table()
-      end
+    elseif Big and Big.is(v) then
+      obj[k] = v:as_table()
     end
   end
 end
