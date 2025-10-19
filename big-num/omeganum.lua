@@ -181,6 +181,8 @@ function Big:neg()
 end
 
 function Big:abs()
+    if self.sign == 1 then return self end
+
     local x = self:clone();
     x.sign = 1;
     return x;
@@ -188,17 +190,17 @@ end
 
 function Big:min(other)
     if (self:lt(other)) then
-        return self:clone()
+        return self
     else
-        return Big:create(other)
+        return Big:ensureBig(other)
     end
 end
 
 function Big:max(other)
     if (self:gt(other)) then
-        return self:clone()
+        return self
     else
-        return Big:create(other)
+        return Big:ensureBig(other)
     end
 end
 
@@ -567,14 +569,14 @@ end
 
 function Big:floor()
     if (self:isint(true)) then
-        return self:clone()
+        return self
     end
     return Big:create(math.floor(self:to_number()));
 end
 
 function Big:ceil()
     if (self:isint()) then
-        return self:clone()
+        return self
     end
     return Big:create(math.ceil(self:to_number()));
 end
@@ -595,7 +597,7 @@ function Big:create(input)
     elseif ((type(input) == "string")) then
         return Big:parse(input)
     elseif Big.is(input) then
-        return input:clone()
+        return input
     else
         return Big:new(input)
     end
@@ -623,19 +625,19 @@ function Big:add(other)
         return x:sub(other:neg());
     end
     if (x:eq(B.ZERO)) then
-        return other:clone();
+        return other
     end
     if (other:eq(B.ZERO)) then
-        return x:clone();
+        return x
     end
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
         return B.NaN;
     end
     if (x:isInfinite()) then
-        return x:clone();
+        return x
     end
     if (other:isInfinite()) then
-        return other:clone();
+        return other
     end
     local p=x:min(other);
     local q=x:max(other);
@@ -679,13 +681,13 @@ function Big:sub(other)
         return B.ZERO
     end
     if (other:eq(B.ZERO)) then
-        return x:clone();
+        return x
     end
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
         return B.NaN
     end
     if (x:isInfinite()) then
-        return x:clone()
+        return x
     end
     if (other:isInfinite()) then
         return other:neg()
@@ -746,20 +748,20 @@ function Big:div(other)
         return B.POSITIVE_INFINITY
     end
     if (other:eq(B.ONE)) then
-        return x:clone()
+        return x
     end
     if (x:eq(other)) then
         return B.ONE
     end
     if (x:isInfinite()) then
-        return x:clone()
+        return x
     end
     if (other:isInfinite()) then
         return B.ZERO
     end
     if (x:max(other):gt(B.EE_MAX_SAFE_INTEGER)) then
         if x:gt(other) then
-            return x:clone()
+            return x
         else
             return B.ZERO
         end
@@ -793,16 +795,16 @@ function Big:mul(other)
         return B.ZERO
     end
     if (other:eq(B.ONE)) then
-        return x:clone()
+        return x
     end
     if (x:eq(B.ONE)) then
-        return other:clone()
+        return other
     end
     if (x:isInfinite()) then
-        return x:clone()
+        return x
     end
     if (other:isInfinite()) then
-        return other:clone()
+        return other
     end
     if (x:max(other):gt(B.EE_MAX_SAFE_INTEGER)) then
         return x:max(other)
@@ -844,10 +846,10 @@ function Big:log10()
         return Big:create(math.log(x:to_number(), 10))
     end
     if (not x:isFinite()) then
-        return x:clone();
+        return x
     end
     if (x:gt(B.TETRATED_MAX_SAFE_INTEGER)) then
-        return x:clone();
+        return x
     end
     x = x:clone()
     x.array[2] = (x.array[2] or 0) - 1;
@@ -866,7 +868,7 @@ function Big:pow(other)
         return B.ONE
     end
     if (other:eq(B.ONE)) then
-        return self:clone()
+        return self
     end
     if (other:lt(B.ZERO)) then
         return self:pow(other:neg()):rec()
@@ -919,7 +921,7 @@ function Big:root(other)
     other = Big:ensureBig(other)
     -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(this+"root"+other);
     if (other:eq(B.ONE)) then
-        return self:clone()
+        return self
     end
     if (other:lt(B.ZERO)) then
         return self:root(other:neg()):rec()
@@ -941,7 +943,7 @@ function Big:root(other)
     end
     if (self:max(other):gt(B.TETRATED_MAX_SAFE_INTEGER)) then
         if self:gt(other) then
-            return self:clone()
+            return self
         else
             return B.ZERO
         end
@@ -959,7 +961,7 @@ function Big:slog(base)
         return B.NaN
     end
     if (x:isInfinite()) then
-        return x:clone();
+        return x
     end
     if (base:isInfinite()) then
         return B.ZERO
@@ -1058,7 +1060,7 @@ function Big:tetrate(other)
         return B.ONE
     end
     if other:eq(B.ONE) then
-        return t:clone()
+        return t
     end
     if other:eq(2) then
         return t:pow(t)
@@ -1123,13 +1125,13 @@ function Big:max_for_op(arrows)
         arrows = arrows:to_number()
     end
     if arrows < 1 or arrows ~= arrows or arrows == R.POSITIVE_INFINITY then
-        return B.NaN:clone()
+        return B.NaN
     end
     if arrows == 1 then
-        return B.E_MAX_SAFE_INTEGER:clone()
+        return B.E_MAX_SAFE_INTEGER
     end
     if arrows == 2 then
-        return B.TETRATED_MAX_SAFE_INTEGER:clone()
+        return B.TETRATED_MAX_SAFE_INTEGER
     end
 
     local arr = {}
@@ -1192,7 +1194,7 @@ function Big:arrow(arrows, other)
         return B.ONE
     end
     if (other:eq(B.ONE)) then
-        return t:clone()
+        return t
     end
     if self:eq(2) and other:eq(2) then
         -- handle infinite arrows
@@ -1281,7 +1283,7 @@ end
 function Big:lambertw()
     local x = self
     if (x:isNaN()) then
-        return x:clone();
+        return x;
     end
     if (x:lt(-0.3678794411710499)) then
         print("lambertw is unimplemented for results less than -1, sorry!")
@@ -1289,11 +1291,11 @@ function Big:lambertw()
         return a.b
     end
     if (x:gt(B.TETRATED_MAX_SAFE_INTEGER)) then
-        return x:clone();
+        return x;
     end
     if (x:gt(B.EE_MAX_SAFE_INTEGER)) then
         x.array[1] = x.array[1] - 1
-        return x:clone();
+        return x;
     end
     if (x:gt(B.E_MAX_SAFE_INTEGER)) then
         return Big:d_lambertw(x)
@@ -1342,10 +1344,10 @@ function Big:d_lambertw(z)
     local wn = nil
     local OMEGA = 0.56714329040978387299997
     if (not z:isFinite()) then
-        return z:clone();
+        return z
     end
     if (z == 0) then
-        return z:clone();
+        return z
     end
     if (z == 1) then
         return OMEGA
