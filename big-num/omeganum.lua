@@ -10,7 +10,7 @@ local bigs = {}
 setmetatable(bigs, { __mode = 'k' })
 
 local Big = { array = {} }
-local OmegaMeta = {}
+OmegaMeta = {}
 
 local MAX_SAFE_INTEGER = 9007199254740991
 local MAX_E = math.log(MAX_SAFE_INTEGER, 10)

@@ -201,7 +201,6 @@ end
 
 local sn = scale_number
 function scale_number(number, scale, max, e_switch_point)
-    if number.scale then return number.scale end
     if not number or not is_number(number) then return scale end
     if not Big then return sn(number, scale, max, e_switch_point) end
 
@@ -211,6 +210,7 @@ function scale_number(number, scale, max, e_switch_point)
     if type(number) ~= "table" then
         number = Big:ensureBig(number)
     end
+    if number.scale then return number.scale end
     if number.e and number.e == 10 ^ 1000 then
         scale = scale * math.floor(math.log(max * 10, 10)) / 7
     end

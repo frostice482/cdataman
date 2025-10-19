@@ -60,7 +60,7 @@ if SMODS.current_mod then
 end
 
 if SMODS.calculate_individual_effect then
-  require("talisman.smods.scoring_calc")
+  require("talisman.smods.ind_effect")
 end
 
 if SMODS.Scoring_Calculation then
