@@ -731,10 +731,12 @@ function Big:add(other)
     local q=qw:as_table();
     local t = B.NEG_ONE;
     if (p.array[2] == 2) and not p:gt(B.E_MAX_SAFE_INTEGER) then
+        p = pw:clone():as_table()
         p.array[2] = 1
         p.array[1] = 10 ^ p.array[1]
     end
     if (q.array[2] == 2) and not q:gt(B.E_MAX_SAFE_INTEGER) then
+        q = qw:clone():as_table()
         q.array[2] = 1
         q.array[1] = 10 ^ q.array[1]
     end
@@ -789,10 +791,12 @@ function Big:sub(other)
     local n = other:gt(x);
     local t = B.NEG_ONE;
     if (p.array[2] == 2) and not p:gt(B.E_MAX_SAFE_INTEGER) then
+        p = pw:clone():as_table()
         p.array[2] = 1
         p.array[1] = 10 ^ p.array[1]
     end
     if (q.array[2] == 2) and not q:gt(B.E_MAX_SAFE_INTEGER) then
+        q = qw:clone():as_table()
         q.array[2] = 1
         q.array[1] = 10 ^ q.array[1]
     end
