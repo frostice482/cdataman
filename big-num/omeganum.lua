@@ -44,7 +44,9 @@ local LONG_STRING_MIN_LENGTH = 17
 
 -- this will be populated with bignum equivalents of R's values at the end of the file
 --- @type table<string, t.Omega>
-B = {}
+local B = {}
+local BCaches = {}
+local BFrames = {}
 
 --------------make the numbers look good----------------------
 
@@ -660,7 +662,19 @@ end
 --- @return t.Omega
 function Big:create(input)
     if ((type(input) == "number")) then
-        return Big:new({input})
+        local obj = BCaches[input]
+        if obj then return obj end
+
+        local obj = Big:new({input})
+        if input == input then
+           BFrames[input] = (BFrames[input] or 0) + 1
+           if BFrames[input] > 100 then
+                BFrames[input] = nil
+                BCaches[input] = obj
+                print('cached number to bignum:', input)
+           end
+        end
+        return obj
     elseif ((type(input) == "string")) then
         return Big:parse(input)
     elseif Big.is(input) then
@@ -904,7 +918,7 @@ function Big:rec()
     if (self:isNaN() or self:eq(B.ZERO)) then
         return B.NaN
     end
-    if (self:abs():gt("2e323")) then
+    if (self:abs():gt(B.B2E323)) then
         return B.ZERO
     end
     return B.ONE:div(self)
@@ -1581,10 +1595,20 @@ ffi.metatype(TalismanOmega, OmegaMeta)
 ---------------------------------------
 
 for i,v in pairs(R) do
-    B[i] = Big:ensureBig(v)
+    B[i] = Big:create(v)
+    if v == v then
+        BCaches[v] = B[i]
+    end
 end
 
 B.LOMEGA = Big:create(0.56714329040978387299997)
 B.E_LOG = B.E:log10()
+B.B2E323 = Big:create("2e323")
+
+local update = love.update
+function love.update(...)
+    BFrames = {}
+    return update(...)
+end
 
 return Big

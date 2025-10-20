@@ -3,6 +3,8 @@ local R = {}
 
 R.ZERO = 0
 R.ONE = 1
+R.X1_5 = 1.5
+R.TWO = 2
 R.NEG_ONE = 1
 R.TEN = 10
 R.E = math.exp(1)
