@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local R = require("big-num.constants")
 
-ffi.cdef[[ struct TalismanOmega {}; ]]
+ffi.cdef[[ struct TalismanOmega { int8_t sign; uint32_t asize; }; ]]
 local TalismanOmega = ffi.typeof("struct TalismanOmega")
 
 --OmegaNum port by Mathguy
@@ -11,7 +11,9 @@ setmetatable(bigs, { __mode = 'k' })
 
 --- @alias t.Omega.Parsable string | number | t.Omega
 
---- @class t.Omega: t.Omega.Proto
+--- @class t.Omega
+--- @field sign number
+--- @field asize number
 --- @operator add(t.Omega|number): t.Omega
 --- @operator sub(t.Omega|number): t.Omega
 --- @operator mul(t.Omega|number): t.Omega
@@ -19,21 +21,15 @@ setmetatable(bigs, { __mode = 'k' })
 --- @operator mod(t.Omega|number): t.Omega
 --- @operator pow(t.Omega|number): t.Omega
 --- @operator unm(): t.Omega
-
---- @class t.Omega.Low: t.Omega.Proto
---- @field array number[]
---- @field sign number
-
---- @class t.Omega.Proto
---- @field unwrapped? boolean
 local Big = {}
-local BigMetaSimple = { __index = Big }
 OmegaMeta = {
     __index = {
         m = false,
         e = false
     }
 }
+
+_G.Big = Big
 
 local MAX_SAFE_INTEGER = 9007199254740991
 local MAX_E = math.log(MAX_SAFE_INTEGER, 10)
@@ -77,13 +73,9 @@ function Big.is(instance)
     return type(instance) == "cdata" and ffi.istype(instance, TalismanOmega)
 end
 
-function Big:assertUnwrapped()
-    assert(self.unwrapped, "Object must be unwrapped with as_table()")
-end
-
-function Big:arraySize()
+local function arraySizeOf(arr)
     local total = 0
-    for i, v in pairs(self:get_array()) do
+    for i, v in pairs(arr) do
         if type(i) == "number" and v ~= 0 then
             total = i
         end
@@ -93,32 +85,29 @@ end
 
 --- @return t.Omega
 function Big:new(arr)
-    local obj = TalismanOmega()
-    bigs[obj] = setmetatable({
-        array = arr,
-        sign = 1
-    }, BigMetaSimple)
-    Big.normalize(bigs[obj])
-    return obj --- @diagnostic disable-line
+    --- @type t.Omega
+    local obj = TalismanOmega(1, 0) --- @diagnostic disable-line
+    bigs[obj] = arr
+    obj:normalize()
+    return obj
 end
 
 function Big:isNaN()
-    self = self:as_table()
-    return self.array[1] ~= self.array[1]
+    local v = self:get_array()[1]
+    return v ~= v
 end
 
 function Big:isInfinite()
-    self = self:as_table()
-    return (self.array[1] == R.POSITIVE_INFINITY) or (self.array[1] == R.NEGATIVE_INFINITY)
+    local v = self:get_array()[1]
+    return (v == R.POSITIVE_INFINITY) or (v == R.NEGATIVE_INFINITY)
 end
 
 function Big:isFinite()
     return (not self:isInfinite() and not self:isNaN())
 end
 
---- @param self t.Omega
 function Big:isint()
-    if (self:get_sign()==-1) then
+    if (self.sign==-1) then
         return self:abs():isint()
     end
     if (self:gt(B.MAX_SAFE_INTEGER)) then
@@ -133,20 +122,22 @@ end
 
 --- @param other t.Omega.Parsable
 function Big:compareTo(other)
-    self = self:as_table()
-    local other = Big:ensureBig(other):as_table()
-    local other_array_size = other:arraySize()
-    local self_array_size = self:arraySize()
-    if ((self.array[1] ~= self.array[1]) or (other.array[1] ~= other.array[1])) then
+    local arr = self:get_array()
+    local other = Big:ensureBig(other)
+    local other_arr = other:get_array()
+
+    local other_array_size = other.asize
+    local self_array_size = self.asize
+    if ((arr[1] ~= arr[1]) or (other_arr[1] ~= other_arr[1])) then
         return R.NaN;
     end
-    if ((self.array[1]==R.POSITIVE_INFINITY) and (other.array[1]~=R.POSITIVE_INFINITY)) then
+    if ((arr[1]==R.POSITIVE_INFINITY) and (other_arr[1]~=R.POSITIVE_INFINITY)) then
         return self.sign
     end
-    if ((self.array[1]~=R.POSITIVE_INFINITY) and (other.array[1]==R.POSITIVE_INFINITY)) then
+    if ((arr[1]~=R.POSITIVE_INFINITY) and (other_arr[1]==R.POSITIVE_INFINITY)) then
         return other.sign
     end
-    if ((self_array_size==1) and (self.array[1]==other.array[1]) and (other_array_size==1)) then
+    if ((self_array_size==1) and (arr[1]==other_arr[1]) and (other_array_size==1)) then
         --return 0
     end
     if (self.sign~=other.sign) then
@@ -160,28 +151,28 @@ function Big:compareTo(other)
         r = -1;
     else
         if self_array_size == 1 then
-            if self.array[1] > other.array[1]  then
+            if arr[1] > other_arr[1]  then
                 return 1 * m
-            elseif self.array[1] < other.array[1] then
+            elseif arr[1] < other_arr[1] then
                 return -1 * m
             else
                 return 0
             end
         end
         local barray = {}
-        for i, v in pairs(self.array) do
+        for i, v in pairs(arr) do
             barray[#barray+1]=i
         end
         --make sure to include both sets of indeces so that it actually checks every non 0 value
-        for i, v in pairs(other.array) do
+        for i, v in pairs(other_arr) do
             barray[#barray+1]=i
         end
         table.sort(barray, function(a,b) return a > b end)
         for i, v in pairs(barray) do
-            if ((self.array[v] or 0)>(other.array[v] or 0)) then
+            if ((arr[v] or 0)>(other_arr[v] or 0)) then
                 r = 1;
                 break;
-            elseif ((self.array[v] or 0)<(other.array[v] or 0)) then
+            elseif ((arr[v] or 0)<(other_arr[v] or 0)) then
                 r = -1
                 break
             end
@@ -219,22 +210,18 @@ end
 --- @return t.Omega
 function Big:neg()
     local x = self:clone();
-    local w = x:as_table()
-    w.sign = w.sign * -1;
+    x.sign = x.sign * -1;
     return x;
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:abs()
-    if self:get_sign() == 1 then return self end
-
+    if self.sign == 1 then return self end
     local x = self:clone();
-    x:as_table().sign = 1;
+    x.sign = 1;
     return x;
 end
 
---- @param self t.Omega
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:min(other)
@@ -245,7 +232,6 @@ function Big:min(other)
     end
 end
 
---- @param self t.Omega
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:max(other)
@@ -256,138 +242,139 @@ function Big:max(other)
     end
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:normalize()
     local b = nil
-    local x = self:as_table()
-    if ((x.array == nil) or (type(x.array) ~= "table") or (Big.arraySize(x) == 0)) then
-        x.array = {0}
+    local arr = self:get_array()
+    if ((arr == nil) or (type(arr) ~= "table") or (arraySizeOf(arr) == 0)) then
+        arr = {}
     end
-    if (Big.arraySize(x) == 1) and (x.array[1] == 0) then
-        x.sign = 1
+    if (arraySizeOf(arr) == 1) and (arr[1] == 0) then
+        self.sign = 1
         return self
     end
-    if (Big.arraySize(x) == 1) and (x.array[1] < 0) then
-        x.sign = -1
-        x.array[1] = -x.array[1]
+    if (arraySizeOf(arr) == 1) and (arr[1] < 0) then
+        self.sign = -1
+        arr[1] = -arr[1]
     end
-    if ((x.sign~=1) and (x.sign~=-1)) then
+    if ((self.sign~=1) and (self.sign~=-1)) then
     --   if (typeof x.sign!="number") x.sign=Number(x.sign);
-        if (x.sign < 0) then
-            x.sign = -1;
+        if (self.sign < 0) then
+            self.sign = -1;
         else
-            x.sign = 1;
+            self.sign = 1;
         end
     end
-    for i, v in pairs(x.array) do
-        local e = x.array[i] or 0;
+    for i, v in pairs(arr) do
+        local e = arr[i] or 0;
         if (e ~= e) then
-            x.array={R.NaN};
+            arr={R.NaN};
             return self
         end
         if (e == R.POSITIVE_INFINITY) or (e == R.NEGATIVE_INFINITY) then
-            x.array = {R.POSITIVE_INFINITY};
+            arr = {R.POSITIVE_INFINITY};
             return self
         end
         if (i ~= 1) then
-            x.array[i]=math.floor(e)
+            arr[i]=math.floor(e)
         end
         --first 3 values kept because they are hardcoded in a few places
         --it also doesnt hurt memory that much to keep them anyway
         if ((e == 0)) and i > 3 then
-            x.array[i] = nil
+            arr[i] = nil
         end
     end
     local doOnce = true
     while (doOnce or b) do
     --   if (OmegaNum.debug>=OmegaNum.ALL) console.log(x.toString());
         b=false;
-        while ((Big.arraySize(x) ~= 0) and (x.array[Big.arraySize(x)]==0)) do
-            x.array[Big.arraySize(x)] = nil;
+        while ((arraySizeOf(arr) ~= 0) and (arr[arraySizeOf(arr)]==0)) do
+            arr[arraySizeOf(arr)] = nil;
             b=true;
         end
-        if ((x.array[1] or 0) > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
-            x.array[2]=(x.array[2] or 0) + 1;
-            x.array[1]= math.log(x.array[1], 10);
+        if ((arr[1] or 0) > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
+            arr[2]=(arr[2] or 0) + 1;
+            arr[1]= math.log(arr[1], 10);
             b=true;
         end
-        while (((x.array[1] or 0) < math.log(R.MAX_DISP_INTEGER,10)) and ((x.array[2] ~= nil) and (x.array[2] ~= 0))) do
-            x.array[1] = math.pow(10,x.array[1]);
-            x.array[2] = x.array[2] - 1
+        while (((arr[1] or 0) < math.log(R.MAX_DISP_INTEGER,10)) and ((arr[2] ~= nil) and (arr[2] ~= 0))) do
+            arr[1] = math.pow(10,arr[1]);
+            arr[2] = arr[2] - 1
             b=true;
         end
-        -- if ((x:arraySize()>2) and ((x.array[2] == nil) or (x.array[2] == 0))) then
+        -- if ((x.asize>2) and ((arr[2] == nil) or (arr[2] == 0))) then
         --     local i = 3
-        --     while (x.array[i] == nil) or (x.array[i] == 0) do
+        --     while (arr[i] == nil) or (arr[i] == 0) do
         --         i = i + 1
         --     end
-        --     x.array[i-1]=x.array[1];
-        --     x.array[1]=1;
-        --     x.array[i] = x.array[i] - 1
+        --     arr[i-1]=arr[1];
+        --     arr[1]=1;
+        --     arr[i] = arr[i] - 1
         --     b=true;
         -- end
         doOnce = false;
-        --l = x:arraySize()
-        for i, v in pairs(x.array) do
+        --l = x.asize
+        for i, v in pairs(arr) do
             if type(i) == "number" then
-                if ((x.array[i] or 0)>R.MAX_SAFE_INTEGER) then
-                    x.array[i+1]=(x.array[i+1] or 0)+1;
-                    x.array[1]=x.array[i]+1;
+                if ((arr[i] or 0)>R.MAX_SAFE_INTEGER) then
+                    arr[i+1]=(arr[i+1] or 0)+1;
+                    arr[1]=arr[i]+1;
                     for j=2,i do
-                        x.array[j]=0;
+                        arr[j]=0;
                     end
                     b=true;
                 end
             end
         end
     end
-    if (Big.arraySize(x) == 0) and #x.array ~= 1 then
-        x.array = {0}
+    if (arraySizeOf(arr) == 0) and #arr ~= 1 then
+        arr = {0}
     end
+    bigs[self] = arr
+    self.asize = arraySizeOf(arr)
     return self
 end
 
 --- @return string
 function Big:toString()
-    self = self:as_table()
+    local arr = self:get_array()
     if (self.sign==-1) then
         return "-" .. self:abs():toString()
     end
-    if (self.array[1] ~= self.array[1]) then
+    if (arr[1] ~= arr[1]) then
         return "NaN"
     end
     -- if (!isFinite(this.array[0])) return "Infinity";
     local s = "";
-    if (self:arraySize()>=2) then
-        for i=self:arraySize(),3,-1 do
+    if (self.asize>=2) then
+        for i=self.asize,3,-1 do
             local q = nil
             if (i >= 6) then
                 q = "{"..(i-1).."}"
             else
                 q = string.rep("^", i-1)
             end
-            if (self.array[i]>1) then
-                s = s .."(10" .. q .. ")^" .. AThousandNotation(self.array[i], 0) .. " "
-            elseif (self.array[i]==1) then
+            if (arr[i]>1) then
+                s = s .."(10" .. q .. ")^" .. AThousandNotation(arr[i], 0) .. " "
+            elseif (arr[i]==1) then
                 s= s .."10" .. q;
             end
         end
     end
-    if (self.array[2] == nil) or (self.array[2] == 0) then
-        if (self.array[1] <= 9e9) then
-            s = s .. AThousandNotation(self.array[1], 2)
+    if (arr[2] == nil) or (arr[2] == 0) then
+        if (arr[1] <= 9e9) then
+            s = s .. AThousandNotation(arr[1], 2)
         else
-            local exponent = math.floor(math.log(self.array[1], 10))
-            local mantissa = math.floor((self.array[1] / (10^exponent))*100)/100
+            local exponent = math.floor(math.log(arr[1], 10))
+            local mantissa = math.floor((arr[1] / (10^exponent))*100)/100
             s = s .. AThousandNotation(mantissa, 2) .. "e" .. AThousandNotation(exponent, 0)
         end
-    elseif (self.array[2]<3) then
-        s = s .. string.rep("e", self.array[2]-1) .. AThousandNotation(math.pow(10,self.array[1]-math.floor(self.array[1])), 2) .. "e" .. AThousandNotation(math.floor(self.array[1]), 0);
-    elseif (self.array[2]<8) then
-        s = s .. string.rep("e", self.array[2]) .. AThousandNotation(self.array[1], 0)
+    elseif (arr[2]<3) then
+        s = s .. string.rep("e", arr[2]-1) .. AThousandNotation(math.pow(10,arr[1]-math.floor(arr[1])), 2) .. "e" .. AThousandNotation(math.floor(arr[1]), 0);
+    elseif (arr[2]<8) then
+        s = s .. string.rep("e", arr[2]) .. AThousandNotation(arr[1], 0)
     else
-        s = s .. "(10^)^" .. AThousandNotation(self.array[2], 0) .. " " .. AThousandNotation(self.array[1],0)
+        s = s .. "(10^)^" .. AThousandNotation(arr[2], 0) .. " " .. AThousandNotation(arr[1],0)
     end
     return s
 end
@@ -411,7 +398,7 @@ function Big:parse(input)
     --   return OmegaNum.fromJSON(input);
     -- }
     local t = Big:new({0})
-    local x = t:as_table()
+    local arr = t:get_array()
     -- if (!isOmegaNum.test(input)){
     --   console.warn(omegaNumError+"Malformed input: "+input);
     --   x.array=[NaN];
@@ -425,9 +412,11 @@ function Big:parse(input)
         input = string.sub(input, 2);
     end
     if (input=="NaN") or (input=="nan") then
-        x.array = {R.NaN}
+        arr = {R.NaN}
+        bigs[t] = arr
     elseif (input=="Infinity") or (input=="inf") then
-        x.array = {R.POSITIVE_INFINITY}
+        arr = {R.POSITIVE_INFINITY}
+        bigs[t] = arr
     else
         --- @type number | number[]
         local a = 0
@@ -485,30 +474,30 @@ function Big:parse(input)
                     c = 1
                 end
                 if (arrows==1) then
-                    x.array[2] = (x.array[2] or 0) + c;
+                    arr[2] = (arr[2] or 0) + c;
                 elseif (arrows==2) then
-                    a = x.array[2] or 0;
-                    b = x.array[1] or 0;
+                    a = arr[2] or 0;
+                    b = arr[1] or 0;
                     if (b>=1e10) then
                         a = a + 1
                     end
                     if (b>=10) then
                         a = a + 1
                     end
-                    x.array[1]=a;
-                    x.array[2]=0;
-                    x.array[3]=(x.array[3] or 0)+c;
+                    arr[1]=a;
+                    arr[2]=0;
+                    arr[3]=(arr[3] or 0)+c;
                 else
-                    a=x.array[arrows] or 0;
-                    b=x.array[arrows-1] or 0;
+                    a=arr[arrows] or 0;
+                    b=arr[arrows-1] or 0;
                     if (b>=10) then
                         a = a + 1
                     end
                     for i=1, arrows do
-                        x.array[i] = 0;
+                        arr[i] = 0;
                     end
-                    x.array[1]=a;
-                    x.array[arrows+1] = (x.array[arrows+1] or 0) + c;
+                    arr[1]=a;
+                    arr[arrows+1] = (arr[arrows+1] or 0) + c;
                 end
             else
                 break
@@ -526,7 +515,7 @@ function Big:parse(input)
         if a[#a] == "" then
             a[#a] = nil
         end
-        b={x.array[1],0};
+        b={arr[1],0};
         c=1;
         for i=#a, 1, -1 do
             if ((b[1] < MAX_E) and (b[2]==0)) then
@@ -588,11 +577,11 @@ function Big:parse(input)
                 b[2] = b[2] + 1;
             end
         end
-        x.array[1]= b[1];
-        x.array[2]= (x.array[2] or 0) + b[2];
+        arr[1]= b[1];
+        arr[2]= (arr[2] or 0) + b[2];
     end
     if (negateIt) then
-        x.sign = x.sign * -1
+        t.sign = t.sign * -1
     end
     t:normalize();
     return t;
@@ -600,36 +589,35 @@ end
 
 --- @return number
 function Big:to_number()
-    self = self:as_table()
+    local arr = self:get_array()
     -- //console.log(this.array);
     if (self.sign==-1) then
         return -1*(self:neg():to_number());
     end
-    if not self.array[1] then return 0 end
-    if self.array[2] == nil then self.array[2] = 0 end
-    if ((self:arraySize()>=2) and ((self.array[2]>=2) or (self.array[2]==1) and (self.array[1]>308))) then
+    if not arr[1] then return 0 end
+    if arr[2] == nil then arr[2] = 0 end
+    if ((self.asize>=2) and ((arr[2]>=2) or (arr[2]==1) and (arr[1]>308))) then
         return R.POSITIVE_INFINITY;
     end
-    if (self:arraySize() >= 3) and ((self.array[1] >= 3) or (self.array[2] >= 1) or (self.array[3] >= 1)) then
+    if (self.asize >= 3) and ((arr[1] >= 3) or (arr[2] >= 1) or (arr[3] >= 1)) then
         return R.POSITIVE_INFINITY;
     end
-    if (self:arraySize() >= 4) and ((self.array[1] > 1) or (self.array[2] >= 1) or (self.array[3] >= 1)) then
-        for i, v in pairs(self.array) do
-            if self.array[i] > 0 and i > 4 then
+    if (self.asize >= 4) and ((arr[1] > 1) or (arr[2] >= 1) or (arr[3] >= 1)) then
+        for i, v in pairs(arr) do
+            if arr[i] > 0 and i > 4 then
                 return R.POSITIVE_INFINITY;
             end
         end
     end
-    if (Big.is(self.array[1])) then
-        self.array[1] = self.array[1]:to_number() --- @diagnostic disable-line
+    if (Big.is(arr[1])) then
+        arr[1] = self.array[1]:to_number() --- @diagnostic disable-line
     end
-    if (self.array[2]==1) then
-        return math.pow(10,self.array[1]);
+    if (arr[2]==1) then
+        return math.pow(10,arr[1]);
     end
-    return self.array[1];
+    return arr[1];
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:floor()
     if (self:isint()) then
@@ -638,7 +626,6 @@ function Big:floor()
     return Big:create(math.floor(self:to_number()));
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:ceil()
     if (self:isint()) then
@@ -649,13 +636,12 @@ end
 
 --- @return t.Omega
 function Big:clone()
-    self = self:as_table()
     local newArr = {}
-    for i, j in pairs(self.array) do
+    for i, j in pairs(self:get_array()) do
         newArr[i] = j
     end
     local result = Big:new(newArr)
-    result:as_table().sign = self.sign
+    result.sign = self.sign
     return result
 end
 
@@ -693,80 +679,76 @@ function Big:ensureBig(input)
     end
 end
 
---- @param self t.Omega
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:add(other)
-    local x = self:as_table()
-    local other_m = Big:ensureBig(other)
-    local other = other_m:as_table()
+    local other = Big:ensureBig(other)
     -- if (OmegaNum.debug>=OmegaNum.NORMAL){
     --   console.log(this+"+"+other);
     --   if (!debugMessageSent) console.warn(omegaNumError+"Debug output via 'debug' is being deprecated and will be removed in the future!"),debugMessageSent=true;
     -- }
-    if (x.sign==-1) then
-        return x:neg():add(other:neg()):neg()
+    if (self.sign==-1) then
+        return self:neg():add(other:neg()):neg()
     end
     if (other.sign==-1) then
         return self:sub(other:neg());
     end
-    if (x:eq(B.ZERO)) then
-        return other_m
+    if (self:eq(B.ZERO)) then
+        return other
     end
     if (other:eq(B.ZERO)) then
         return self
     end
-    if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
+    if (self:isNaN() or other:isNaN() or (self:isInfinite() and other:isInfinite() and self:eq(other:neg()))) then
         return B.NaN;
     end
-    if (x:isInfinite()) then
+    if (self:isInfinite()) then
         return self
     end
     if (other:isInfinite()) then
-        return other_m
+        return other
     end
-    local pw=self:min(other_m);
-    local p=pw:as_table();
-    local qw=self:max(other_m);
-    local q=qw:as_table();
+    local pw=self:min(other);
+    local p=pw:get_array();
+    local qw=self:max(other);
+    local q=qw:get_array();
     local t = B.NEG_ONE;
-    if (p.array[2] == 2) and not p:gt(B.E_MAX_SAFE_INTEGER) then
-        p = pw:clone():as_table()
-        p.array[2] = 1
-        p.array[1] = 10 ^ p.array[1]
+    if (p[2] == 2) and not pw:gt(B.E_MAX_SAFE_INTEGER) then
+        p = pw:clone():get_array()
+        p[2] = 1
+        p[1] = 10 ^ p[1]
     end
-    if (q.array[2] == 2) and not q:gt(B.E_MAX_SAFE_INTEGER) then
-        q = qw:clone():as_table()
-        q.array[2] = 1
-        q.array[1] = 10 ^ q.array[1]
+    if (q[2] == 2) and not qw:gt(B.E_MAX_SAFE_INTEGER) then
+        q = qw:clone():get_array()
+        q[2] = 1
+        q[1] = 10 ^ q[1]
     end
-    if (q:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
+    if (qw:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
         t = qw;
-    elseif (q.array[2] == nil) or (q.array[2] == 0) then
-        t= Big:create(x:to_number()+other:to_number());
-    elseif (q.array[2]==1) then
+    elseif (q[2] == nil) or (q[2] == 0) then
+        t= Big:create(self:to_number()+other:to_number());
+    elseif (q[2]==1) then
         local a
-        if (p.array[2] ~= nil) and (p.array[2] ~= 0) then
-            a = p.array[1]
+        if (p[2] ~= nil) and (p[2] ~= 0) then
+            a = p[1]
         else
-            a = math.log(p.array[1], 10)
+            a = math.log(p[1], 10)
         end
-        t = Big:new({a+math.log(math.pow(10,q.array[1]-a)+1, 10),1});
+        t = Big:new({a+math.log(math.pow(10,q[1]-a)+1, 10),1});
     end
     return t;
 end
 
---- @param self t.Omega
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:sub(other)
     local x = self
     other = Big:ensureBig(other)
     -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(x+"-"+other);
-    if (x:get_sign() ==-1) then
+    if (x.sign ==-1) then
         return x:neg():sub(other:neg()):neg()
     end
-    if (other:get_sign() ==-1) then
+    if (other.sign ==-1) then
         return x:add(other:neg())
     end
     if (x:eq(other)) then
@@ -785,39 +767,39 @@ function Big:sub(other)
         return other:neg()
     end
     local pw=x:min(other);
-    local p=pw:as_table();
+    local p=pw:get_array();
     local qw=x:max(other);
-    local q=qw:as_table();
+    local q=qw:get_array();
     local n = other:gt(x);
     local t = B.NEG_ONE;
-    if (p.array[2] == 2) and not p:gt(B.E_MAX_SAFE_INTEGER) then
-        p = pw:clone():as_table()
-        p.array[2] = 1
-        p.array[1] = 10 ^ p.array[1]
+    if (p[2] == 2) and not pw:gt(B.E_MAX_SAFE_INTEGER) then
+        p = pw:clone():get_array()
+        p[2] = 1
+        p[1] = 10 ^ p[1]
     end
-    if (q.array[2] == 2) and not q:gt(B.E_MAX_SAFE_INTEGER) then
-        q = qw:clone():as_table()
-        q.array[2] = 1
-        q.array[1] = 10 ^ q.array[1]
+    if (q[2] == 2) and not qw:gt(B.E_MAX_SAFE_INTEGER) then
+        q = qw:clone():get_array()
+        q[2] = 1
+        q[1] = 10 ^ q[1]
     end
-    if (q:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
+    if (qw:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
         t = qw;
         if n then
             t = t:neg()
         else
             t = t
         end
-    elseif (q.array[2] == nil) or (q.array[2] == 0) then
+    elseif (q[2] == nil) or (q[2] == 0) then
         t = Big:create(x:to_number()-other:to_number());
-    elseif (q.array[2]==1) then
+    elseif (q[2]==1) then
         local a
-        if (p.array[2] ~= nil) and (p.array[2] ~= 0) then
-            a = p.array[1]
+        if (p[2] ~= nil) and (p[2] ~= 0) then
+            a = p[1]
         else
-            a = math.log(p.array[1], 10)
+            a = math.log(p[1], 10)
         end
 
-        t = Big:new({a+math.log(math.pow(10,q.array[1]-a)-1, 10),1});
+        t = Big:new({a+math.log(math.pow(10,q[1]-a)-1, 10),1});
         if n then
             t = t:neg()
         else
@@ -827,16 +809,15 @@ function Big:sub(other)
     return t;
 end
 
---- @param self t.Omega
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:div(other)
     local x = self;
     other = Big:ensureBig(other);
-    if (x:get_sign()*other:get_sign()==-1) then
+    if (x.sign*other.sign==-1) then
         return x:abs():div(other:abs()):neg()
     end
-    if (x:get_sign()==-1) then
+    if (x.sign==-1) then
         return x:abs():div(other:abs())
     end
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
@@ -882,10 +863,10 @@ function Big:mul(other)
     local x = Big:ensureBig(self);
     other = Big:ensureBig(other);
     -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(x+"*"+other);
-    if (x:get_sign()*other:get_sign()==-1) then
+    if (x.sign*other.sign==-1) then
         return x:abs():mul(other:abs()):neg()
     end
-    if (x:get_sign()==-1) then
+    if (x.sign==-1) then
         return x:abs():mul(other:abs())
     end
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
@@ -916,7 +897,6 @@ function Big:mul(other)
     return B.TEN:pow(x:log10():add(other:log10()));
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:rec()
     if (self:isNaN() or self:eq(B.ZERO)) then
@@ -928,7 +908,6 @@ function Big:rec()
     return B.ONE:div(self)
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:logBase(base)
     return self:log10():div(base:log10())
@@ -936,7 +915,6 @@ end
 
 Big.log = Big.logBase
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:log10()
     local x = self;
@@ -962,13 +940,11 @@ function Big:log10()
     return x:normalize()
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:ln()
     return self:log10():div(B.E_LOG)
 end
 
---- @param self t.Omega
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:pow(other)
@@ -1024,13 +1000,11 @@ function Big:pow(other)
     return B.TEN:pow(self:log10():mul(other));
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:exp()
     return B.E:pow(self)
 end
 
---- @param self t.Omega
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:root(other)
@@ -1067,7 +1041,6 @@ function Big:root(other)
     return B.TEN:pow(self:log10():div(other));
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:slog(base)
     if base == nil then
@@ -1144,7 +1117,6 @@ function Big:slog(base)
     error('?')
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:tetrate(other)
     local t = self
@@ -1154,7 +1126,7 @@ function Big:tetrate(other)
     if (t:isNaN() or other:isNaN()) then
         return B.NaN
     end
-    if (other:isInfinite() and other:get_sign() > 0) then
+    if (other:isInfinite() and other.sign > 0) then
         negln = t:ln():neg()
         return negln:lambertw():div(negln)
     end
@@ -1274,8 +1246,7 @@ function Big:max_for_op(arrows)
     end
     arr[arrows - 1] = 8
 
-    local res = Big:new({0})
-    res:as_table().array = arr
+    local res = Big:new(arr)
     return res
 end
 
@@ -1395,44 +1366,41 @@ function Big:arrow(arrows, other)
     return r
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:mod(other)
-    local x = self:as_table()
     other = Big:ensureBig(other)
     if (other:eq(B.ZERO)) then
         return B.NaN
     end
-    if (x.sign*other:get_sign() == -1) then
+    if (self.sign*other.sign == -1) then
         return self:abs():mod(other:abs()):neg()
     end
-    if (x.sign==-1) then
+    if (self.sign==-1) then
         return self:abs():mod(other:abs())
     end
     return self:sub(self:div(other):floor():mul(other))
 end
 
---- @param self t.Omega
 --- @return t.Omega
 function Big:lambertw()
-    local x = self:as_table()
-    if (x:isNaN()) then
+    local arr = self:get_array()
+    if (self:isNaN()) then
         return self
     end
-    if (x:lt(-0.3678794411710499)) then
+    if (self:lt(-0.3678794411710499)) then
         error("lambertw is unimplemented for results less than -1, sorry!")
     end
-    if (x:gt(B.TETRATED_MAX_SAFE_INTEGER)) then
+    if (self:gt(B.TETRATED_MAX_SAFE_INTEGER)) then
         return self
     end
-    if (x:gt(B.EE_MAX_SAFE_INTEGER)) then
-        x.array[1] = x.array[1] - 1
+    if (self:gt(B.EE_MAX_SAFE_INTEGER)) then
+        arr[1] = arr[1] - 1
         return self
     end
-    if (x:gt(B.E_MAX_SAFE_INTEGER)) then
-        return Big:d_lambertw(x)
+    if (self:gt(B.E_MAX_SAFE_INTEGER)) then
+        return Big:d_lambertw(self)
     else
-        return Big:create(Big:f_lambertw(x.sign*x.array[1]))
+        return Big:create(Big:f_lambertw(self.sign*arr[1]))
     end
 end
 
@@ -1495,17 +1463,18 @@ function Big:d_lambertw(z)
     error("Iteration failed to converge: "+z)
 end
 
---- @return t.Omega.Low
+--- @class t.Omega.Low
+
+--- @return nil
 function Big:as_table()
-    return bigs[self] or self --- @diagnostic disable-line
+    return {
+        array = bigs[self],
+        sign = self.sign
+    }
 end
 
 function Big:get_array()
-    return self:as_table().array
-end
-
-function Big:get_sign()
-    return self:as_table().sign
+    return bigs[self]
 end
 
 for k,v in pairs(Big) do
