@@ -25,11 +25,8 @@ setmetatable(bigs, { __mode = 'k' })
 --- @field sign number
 
 --- @class t.Omega.Proto
---- @field protected array nil
 --- @field unwrapped? boolean
-local Big = {
-    array = {},
-}
+local Big = {}
 local BigMetaSimple = { __index = Big }
 OmegaMeta = {
     __index = {
@@ -41,6 +38,9 @@ OmegaMeta = {
 local MAX_SAFE_INTEGER = 9007199254740991
 local MAX_E = math.log(MAX_SAFE_INTEGER, 10)
 local LONG_STRING_MIN_LENGTH = 17
+
+local Big2 = Big
+Big2.array = {}
 
 -- this will be populated with bignum equivalents of R's values at the end of the file
 --- @type table<string, t.Omega>
@@ -1271,7 +1271,7 @@ function Big:max_for_op(arrows)
     arr[arrows - 1] = 8
 
     local res = Big:new({0})
-    res.array = arr
+    res:as_table().array = arr
     return res
 end
 
