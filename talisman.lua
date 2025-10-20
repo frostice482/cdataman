@@ -86,7 +86,7 @@ function to_big(x, y)
     return x
   elseif Big and Big.array then
     local result = Big:create(x)
-    if y then result:as_table().sign = y end
+    if y then result.sign = y end
     return result
   elseif is_number(x) then
     return x * 10^(y or 0)
