@@ -6,6 +6,7 @@ local TalismanOmega = ffi.typeof("struct TalismanOmega")
 
 --OmegaNum port by Mathguy
 
+--- @type table<t.Omega, number[]>
 local bigs = {}
 setmetatable(bigs, { __mode = 'k' })
 
@@ -159,23 +160,23 @@ function Big:compareTo(other)
                 return 0
             end
         end
-        local barray = {}
-        for i, v in pairs(arr) do
-            barray[#barray+1]=i
-        end
-        --make sure to include both sets of indeces so that it actually checks every non 0 value
-        for i, v in pairs(other_arr) do
-            barray[#barray+1]=i
-        end
-        table.sort(barray, function(a,b) return a > b end)
-        for i, v in pairs(barray) do
-            if ((arr[v] or 0)>(other_arr[v] or 0)) then
+        local a, av = next(arr)
+        local b, bv = next(other_arr)
+        local s
+
+        while av and bv do
+            if av>bv then
                 r = 1;
                 break;
-            elseif ((arr[v] or 0)<(other_arr[v] or 0)) then
+            elseif av<bv then
                 r = -1
                 break
             end
+
+            s = a
+            if a >= b then a,av = next(arr, a) end
+            if b >= s then b,bv = next(arr, b) end
+
             r = r or 0;
         end
     end
@@ -249,11 +250,12 @@ function Big:normalize()
     if ((arr == nil) or (type(arr) ~= "table") or (arraySizeOf(arr) == 0)) then
         arr = {}
     end
-    if (arraySizeOf(arr) == 1) and (arr[1] == 0) then
+    local asize = arraySizeOf(arr)
+    if (asize == 1) and (arr[1] == 0) then
         self.sign = 1
         return self
     end
-    if (arraySizeOf(arr) == 1) and (arr[1] < 0) then
+    if (asize == 1) and (arr[1] < 0) then
         self.sign = -1
         arr[1] = -arr[1]
     end
@@ -288,8 +290,9 @@ function Big:normalize()
     while (doOnce or b) do
     --   if (OmegaNum.debug>=OmegaNum.ALL) console.log(x.toString());
         b=false;
-        while ((arraySizeOf(arr) ~= 0) and (arr[arraySizeOf(arr)]==0)) do
-            arr[arraySizeOf(arr)] = nil;
+        asize = arraySizeOf(arr)
+        while ((asize ~= 0) and (arr[asize]==0)) do
+            arr[asize] = nil;
             b=true;
         end
         if ((arr[1] or 0) > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
