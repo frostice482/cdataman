@@ -145,9 +145,7 @@ target = "engine/string_packer.lua"
 pattern = 'if type_v == "table" then'
 position = "after"
 payload = '''
-if v.m and v.e then
-v = "to_big("..v.m..","..v.e..")"
-elseif v.array and v.sign then
+if v.array and v.sign then
 	local v0 = "to_big({"
 	for i, v in pairs(v.array) do
 		v0 = v0 .. ("["..i.."] = "..(v or 0)) .. ", "

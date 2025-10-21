@@ -28,12 +28,7 @@ function BalaNotation:format(l, places)
     end
     --The notation here is Hyper-E notation, but with lowercase E.
     if to_big(l:log10()) < to_big(1000000) then
-        --1.234e56789
-        if false then --BigNum
-            local mantissa = math.floor(n.m*10^places+0.5)/10^places
-            local exponent = n.e
-            return mantissa.."e"..e_ify(exponent)
-        elseif n.array[2] == 1 then --OmegaNum
+        if n.array[2] == 1 then --OmegaNum
             local mantissa = 10^(n.array[1]-math.floor(n.array[1]))
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
             local exponent = math.floor(n.array[1])
@@ -45,13 +40,7 @@ function BalaNotation:format(l, places)
             return (n.sign == -1 and "-" or "")..mantissa.."e"..e_ify(exponent)
         end
     elseif to_big(l:log10()) < to_big(10)^1000000 then
-        --e1.234e56789
-        if false then --BigNum
-            local exponent = math.floor(math.log(n.e,10))
-            local mantissa = n.e/10^exponent
-            mantissa = math.floor(mantissa*10^places+0.5)/10^places
-            return "e"..mantissa.."e"..e_ify(exponent)
-        elseif n.array[2] == 2 then --OmegaNum
+        if n.array[2] == 2 then --OmegaNum
             local mantissa = 10^(n.array[1]-math.floor(n.array[1]))
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
             local exponent = math.floor(n.array[1])
