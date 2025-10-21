@@ -77,7 +77,7 @@ function is_number(x)
   return false
 end
 
---- @return t.Omega | talisman.Big | number
+--- @return t.Omega | number
 function to_big(x, y)
   if type(x) == 'string' and x == "0" then --hack for when 0 is asked to be a bignumber need to really figure out the fix
     return 0
@@ -122,6 +122,10 @@ function uncompress_big(str, sign)
         end
     end
     return to_big(array, y)
+end
+
+function lenient_bignum(x)
+    return x
 end
 
 --patch to remove animations

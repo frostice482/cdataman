@@ -5,20 +5,20 @@ BigC = {
     ONE = 1,
     TEN = 10,
     BIG = 1e308,
-    NBIG = -1e308
+    NBIG = -1e308,
 }
 
 local _Big, err = nativefs.load(Talisman.mod_path .. "/big-num/" .. Talisman.config_file.break_infinity .. ".lua")
-if not err then
-    Big = _Big()
-    for k,v in pairs(BigC) do
-        BigC[k] = Big:new(v)
-    end
+if not _Big or err then return end
+
+Big = _Big()
+for k,v in pairs(BigC) do
+    BigC[k] = Big:new(v)
 end
 
-G.E_SWITCH_POINT = to_big(100000000000)
-
 Notations = require("big-num.notations")
+local constants = require("big-num.constants")
+BigC.E_MAX_SAFE_INTEGER = Big:create(constants.E_MAX_SAFE_INTEGER)
 
 -- We call this after init_game_object to leave room for mods that add more poker hands
 Talisman.igo = function(obj)
@@ -158,7 +158,7 @@ function get_blind_amount(ante)
 
     local a, b, c, d = amounts[8], 1.6, ante - 8, 1 + 0.2 * (ante - 8)
     local amount = a * (b + (k * c) ^ d) ^ c
-    if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+    if (amount:lt(BigC.E_MAX_SAFE_INTEGER)) then
         local exponent = to_big(10) ^ (math.floor(amount:log10() - to_big(1))):to_number()
         amount = math.floor(amount / exponent):to_number() * exponent
     end
@@ -325,7 +325,7 @@ if SMODS then
             amount = math.floor(a * (b + (b * k * c) ^ d) ^ c)
         end
 
-        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
+        if (amount:lt(BigC.E_MAX_SAFE_INTEGER)) then
             local exponent = to_big(10) ^ (math.floor(amount:log10() - to_big(1))):to_number()
             amount = math.floor(amount / exponent):to_number() * exponent
         end
