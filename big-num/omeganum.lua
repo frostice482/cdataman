@@ -138,46 +138,28 @@ function Big:compareTo(other)
     if ((arr[1]~=R.POSITIVE_INFINITY) and (other_arr[1]==R.POSITIVE_INFINITY)) then
         return other.sign
     end
-    if ((self_array_size==1) and (arr[1]==other_arr[1]) and (other_array_size==1)) then
+    if ((self.asize==1) and (arr[1]==other_arr[1]) and (other.asize==1)) then
         --return 0
     end
     if (self.sign~=other.sign) then
         return self.sign
     end
     local m = self.sign;
-    local r = nil;
-    if (self_array_size>other_array_size) then
+    local r = 0;
+    if (self.asize>other.asize) then
         r = 1;
-    elseif (self_array_size<other_array_size) then
+    elseif (self.asize<other.asize) then
         r = -1;
     else
-        if self_array_size == 1 then
-            if arr[1] > other_arr[1]  then
-                return 1 * m
-            elseif arr[1] < other_arr[1] then
-                return -1 * m
-            else
-                return 0
-            end
-        end
-        local a, av = next(arr)
-        local b, bv = next(other_arr)
-        local s
-
-        while av and bv do
-            if av>bv then
-                r = 1;
-                break;
-            elseif av<bv then
+        for i=self_array_size, 1, -1 do
+            local a, b = arr[i] or 0, other_arr[i] or 0
+            if a > b then
+                r = 1
+                break
+            elseif a < b then
                 r = -1
                 break
             end
-
-            s = a
-            if a >= b then a,av = next(arr, a) end
-            if b >= s then b,bv = next(arr, b) end
-
-            r = r or 0;
         end
     end
     return r * m;
@@ -1586,5 +1568,7 @@ function love.update(...)
     BFrames = {}
     return update(...)
 end
+
+BB = B
 
 return Big
