@@ -4,7 +4,11 @@ local nativefs = require("nativefs")
 local info = nativefs.getDirectoryItemsInfo(lovely.mod_dir)
 local talisman_path = ""
 for i, v in pairs(info) do
-  if nativefs.getInfo(lovely.mod_dir .. "/" .. v.name .. "/talisman.lua") then talisman_path = lovely.mod_dir .. "/" .. v.name end
+  local base = lovely.mod_dir .. "/" .. v.name
+  if nativefs.getInfo(base .. "/talisman/smods/ind_effect.lua") and not nativefs.getInfo(base .. "/.lovelyignore") then
+    talisman_path = base
+    break
+  end
 end
 
 if not nativefs.getInfo(talisman_path) then
