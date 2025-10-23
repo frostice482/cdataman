@@ -1,0 +1,22 @@
+{
+	"id": "cdataman",
+	"name": "cdataman",
+	"author": [
+		"MathIsFun_",
+		"Mathguy24",
+		"frostice482",
+		"jenwalter666",
+		"cg-223",
+		"lord.ruby"
+	],
+	"description": "A talisman fork aiming to support high-scoring runs while keeping compat with other mods",
+	"prefix": "cdataman",
+	"main_file": "smods.lua",
+	"priority": 0,
+	"badge_colour": "",
+	"badge_text_colour": "",
+	"version": "3.0.0",
+	"provides": [
+		"Talisman (2.5)"
+	]
+}
