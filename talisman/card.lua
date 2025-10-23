@@ -1,11 +1,3 @@
---[[local ec = eval_card
-function eval_card()
-  Talisman.calculating_card = true
-  local ret = ec()
-  Talisman.calculating_card = false
-  return ret
-end--]]
-
 function Card:get_chip_e_bonus()
     if self.debuff then return 0 end
     if self.ability.set == 'Joker' then return 0 end

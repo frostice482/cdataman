@@ -1,10 +1,10 @@
 --scoring coroutine
 local oldplay = G.FUNCS.evaluate_play
 function G.FUNCS.evaluate_play(...)
-	G.SCORING_COROUTINE = coroutine.create(oldplay)
-	G.LAST_SCORING_YIELD = love.timer.getTime()
-	G.CARD_CALC_COUNTS = {} -- keys = cards, values = table containing numbers
-	local success, err = coroutine.resume(G.SCORING_COROUTINE, ...)
+	Talisman.scoring_coroutine = coroutine.create(oldplay)
+	Talisman.scoring_yield = love.timer.getTime()
+
+	local success, err = coroutine.resume(Talisman.scoring_coroutine, ...)
 	if not success then
 		error(err)
 	end
@@ -15,65 +15,75 @@ function G.FUNCS.tal_abort()
 	tal_aborted = true
 end
 
+local function clear_state()
+	tal_aborted = nil
+
+	Talisman.scoring_coroutine = nil
+	Talisman.scoring_time = 0
+	Talisman.scoring_joker_count = 0
+	Talisman.scoring_state = nil
+
+	Talisman.scoring_card_prev = nil
+	Talisman.scoring_joker_prev = nil
+
+	Talisman.calculating_score = nil
+	Talisman.calculating_joker = nil
+	Talisman.calculating_card = nil
+end
+
 local function stopping()
-	G.SCORING_COROUTINE = nil
 	G.FUNCS.exit_overlay_menu()
-	local totalCalcs = 0
-	for i, v in pairs(G.CARD_CALC_COUNTS) do
-		totalCalcs = totalCalcs + v[1]
-	end
-	G.GAME.LAST_CALCS = totalCalcs
-	G.GAME.LAST_CALC_TIME = G.CURRENT_CALC_TIME
-	G.CURRENT_CALC_TIME = 0
+
 	if tal_aborted and Talisman.scoring_state == "main" then
 		evaluate_play_final_scoring(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
 	end
-	tal_aborted = nil
-	Talisman.scoring_state = nil
+
+	G.GAME.LAST_CALCS = Talisman.scoring_joker_count
+	G.GAME.LAST_CALC_TIME = Talisman.scoring_time
+	clear_state()
 end
 
-local function create_UIBox_scoring_text()
+function Talisman.create_UIBox_scoring_text(texts)
+	local nodes = {}
+
+	table.insert(nodes, {
+		n = G.UIT.R,
+		config = { padding = 0.2, align = "cm" },
+		nodes = {
+			{ n = G.UIT.T, config = { colour = G.C.WHITE, scale = 1, text = localize("tal_calculating") } },
+		}
+	})
+
+	for i in ipairs(texts) do
+		table.insert(nodes, {
+			n = G.UIT.R,
+			nodes = {
+				{ n = G.UIT.T, config = { colour = G.C.WHITE, scale = 0.4, ref_table = texts, ref_value = i } },
+			}
+		})
+	end
+
+	table.insert(nodes, {
+		n = G.UIT.R,
+		config = { padding = 0.2, align = "cm" },
+		nodes = {
+			UIBox_button({
+				colour = G.C.BLUE,
+				button = "tal_abort",
+				label = { localize("tal_abort") },
+				minw = 4.5,
+				focus_args = { snap_to = true },
+			})
+		}
+	})
+
 	return {
 		n = G.UIT.C,
-		nodes = {
-			{
-				n = G.UIT.R,
-				config = { padding = 0.1, align = "cm" },
-				nodes = {
-					{ n = G.UIT.O, config = { object = DynaText({ string = { { ref_table = G.scoring_text, ref_value = 1 } }, colours = { G.C.UI.TEXT_LIGHT }, shadow = true, pop_in = 0, scale = 1, silent = true }) } },
-				}
-			}, {
-				n = G.UIT.R,
-				nodes = {
-					{ n = G.UIT.O, config = { object = DynaText({ string = { { ref_table = G.scoring_text, ref_value = 2 } }, colours = { G.C.UI.TEXT_LIGHT }, shadow = true, pop_in = 0, scale = 0.4, silent = true }) } },
-				}
-			}, {
-				n = G.UIT.R,
-				nodes = {
-					{ n = G.UIT.O, config = { object = DynaText({ string = { { ref_table = G.scoring_text, ref_value = 3 } }, colours = { G.C.UI.TEXT_LIGHT }, shadow = true, pop_in = 0, scale = 0.4, silent = true }) } },
-				}
-			}, {
-				n = G.UIT.R,
-				nodes = {
-					{ n = G.UIT.O, config = { object = DynaText({ string = { { ref_table = G.scoring_text, ref_value = 4 } }, colours = { G.C.UI.TEXT_LIGHT }, shadow = true, pop_in = 0, scale = 0.4, silent = true }) } },
-				}
-			}, {
-				n = G.UIT.R,
-				nodes = {
-					UIBox_button({
-						colour = G.C.BLUE,
-						button = "tal_abort",
-						label = { localize("talisman_string_E") },
-						minw = 4.5,
-						focus_args = { snap_to = true },
-					})
-				}
-			},
-		}
+		nodes = nodes
 	}
 end
 
-local function create_UIBox_scoring_overlay()
+function Talisman.create_UIBox_scoring_overlay(texts)
 	return {
 		n = G.UIT.ROOT,
 		config = {
@@ -83,44 +93,66 @@ local function create_UIBox_scoring_overlay()
 			r = 0.1,
 			colour = { G.C.GREY[1], G.C.GREY[2], G.C.GREY[3], 0.7 }
 		},
-		nodes = { create_UIBox_scoring_text() }
+		nodes = { Talisman.create_UIBox_scoring_text(texts) }
 	}
 end
 
-local function overlay()
-	G.scoring_text = { localize("talisman_string_D"), "", "", "" }
+function Talisman.scoring_overlay()
+	Talisman.scoring_text = {
+		"", -- currently calculating
+		"", -- card progress
+		--"", -- joker progress
+		"", -- lua mem
+	}
+	if G.GAME.LAST_CALCS then
+		local text = string.format("%s: %d (%.2fs)", localize("tal_last_elapsed"), G.GAME.LAST_CALCS, G.GAME.LAST_CALC_TIME)
+		table.insert(Talisman.scoring_text, text)
+	end
+
 	G.FUNCS.overlay_menu({
-		definition = create_UIBox_scoring_overlay(),
+		definition = Talisman.create_UIBox_scoring_overlay(Talisman.scoring_text),
 		config = { align = "cm", offset = { x = 0, y = 0 }, major = G.ROOM_ATTACH, bond = 'Weak' }
 	})
 end
 
-local function upadteText()
-	local totalCalcs = 0
-	for i, v in pairs(G.CARD_CALC_COUNTS) do
-		totalCalcs = totalCalcs + v[1]
+local function upadte_scoring_text()
+	Talisman.scoring_text[1] = string.format("%s: %d (%.2fs)", localize("tal_elapsed"), Talisman.scoring_joker_count, Talisman.scoring_time)
+
+	if Talisman.scoring_card_prev then
+		local card = Talisman.scoring_card_prev
+		local desc = card.area == G.hand and 'hand' or 'play'
+		Talisman.scoring_text[2] = string.format("%s: %d/%d (%s)", localize("tal_card_prog"), card.rank, #card.area.cards, desc or '???')
+	else
+		Talisman.scoring_text[2] = string.format("%s: -", localize("tal_card_prog"))
 	end
-	local jokersYetToScore = #G.jokers.cards + #G.play.cards - #G.CARD_CALC_COUNTS
-	G.scoring_text[1] = localize("talisman_string_D")
-	G.scoring_text[2] = localize("talisman_string_F") .. tostring(totalCalcs) .. " (" .. tostring(number_format(G.CURRENT_CALC_TIME)) .. "s)" G.scoring_text[3] = localize("talisman_string_G") .. tostring(jokersYetToScore)
-	G.scoring_text[4] = localize("talisman_string_H") .. tostring(G.GAME.LAST_CALCS or localize("talisman_string_I")) .. " (" .. tostring(G.GAME.LAST_CALC_TIME and number_format(G.GAME.LAST_CALC_TIME) or "???") .. "s)"
+
+	--[[
+	if Talisman.scoring_joker_prev then
+		local card = Talisman.scoring_joker_prev
+		Talisman.scoring_text[3] = string.format("%s: %d/%d", localize("tal_joker_prog"), card.rank, #card.area.cards)
+	else
+		Talisman.scoring_text[3] = string.format("%s: -", localize("tal_joker_prog"))
+	end
+	]]
+
+	Talisman.scoring_text[3] = string.format("%s: %.2fMB", localize("tal_luamem"), collectgarbage('count') / 1024)
 end
 
-local function update_scoring(dt)
+function Talisman.update_scoring(dt)
 	if collectgarbage("count") > 1024 * 1024 then
 		collectgarbage("collect")
 	end
 
-	if coroutine.status(G.SCORING_COROUTINE) == "dead" or tal_aborted then
+	if coroutine.status(Talisman.scoring_coroutine) == "dead" or tal_aborted then
 		stopping()
 		return
 	end
 
 	if not G.OVERLAY_MENU then
-		overlay()
+		Talisman.scoring_overlay()
 	else
-		G.CURRENT_CALC_TIME = (G.CURRENT_CALC_TIME or 0) + dt
-		upadteText()
+		Talisman.scoring_time = (Talisman.scoring_time or 0) + dt
+		upadte_scoring_text()
 	end
 
 	--this coroutine allows us to stagger GC cycles through
@@ -129,13 +161,13 @@ local function update_scoring(dt)
 	--event queue overhead seems to not exist if Talismans Disable Scoring Animations is off.
 	--event manager has to wait for scoring to finish until it can keep processing events anyways.
 
-	G.LAST_SCORING_YIELD = love.timer.getTime()
-	assert(coroutine.resume(G.SCORING_COROUTINE))
+	Talisman.scoring_yield = love.timer.getTime()
+	assert(coroutine.resume(Talisman.scoring_coroutine))
 end
 
 local oldupd = love.update
 function love.update(dt, ...)
-	if G.SCORING_COROUTINE then update_scoring(dt) end
+	if Talisman.scoring_coroutine then Talisman.update_scoring(dt) end
 	return oldupd(dt, ...)
 end
 
@@ -144,45 +176,56 @@ Talisman.TIME_BETWEEN_SCORING_FRAMES = 0.03
 -- we dont want overhead from updates making scoring much slower
 -- originally 10 fps, I think 30 fps is a good way to balance it while making it look smooth, too
 -- wrap everything in calculating contexts so we can do more things with it
-Talisman.calculating_joker = false
-Talisman.calculating_score = false
-Talisman.calculating_card = false
-Talisman.dollar_update = false
 
-local counter = 0
+clear_state()
+
+function Talisman.shouldyield()
+	return Talisman.scoring_joker_count % 250 == 0
+		and Talisman.scoring_yield
+		and love.timer.getTime() - Talisman.scoring_yield > Talisman.TIME_BETWEEN_SCORING_FRAMES
+		and coroutine.running()
+end
+
+function Talisman.yieldjoker()
+	Talisman.scoring_joker_count = Talisman.scoring_joker_count + 1
+	if Talisman.shouldyield() then
+		coroutine.yield()
+	end
+end
+
+local ec = eval_card
+function eval_card(card, ctx)
+	if not Talisman.scoring_coroutine then return ec(card, ctx) end
+
+	local iv = Talisman.calculating_card
+	Talisman.calculating_card = (iv or 0) + 1
+	if not iv then
+		if card.area == G.hand or card.area == G.play then
+			Talisman.scoring_card_prev = card
+		--[[elseif card.area == G.jokers then
+			Talisman.scoring_joker_prev = card
+		]]
+		end
+	end
+
+	local ret, a, b = ec(card, ctx)
+
+	Talisman.calculating_card = iv
+	return ret, a, b
+end
 
 local ccj = Card.calculate_joker
 function Card:calculate_joker(context)
-	--scoring coroutine
-	G.CURRENT_SCORING_CARD = self
-	G.CARD_CALC_COUNTS = G.CARD_CALC_COUNTS or {}
-	if G.CARD_CALC_COUNTS[self] then
-		G.CARD_CALC_COUNTS[self][1] = G.CARD_CALC_COUNTS[self][1] + 1
-	else
-		G.CARD_CALC_COUNTS[self] = { 1, 1 }
-	end
+	if not Talisman.scoring_coroutine then return ccj(self, context) end
+	Talisman.yieldjoker()
 
-	if not Talisman.F_NO_COROUTINE then
-		counter = counter + 1
-		if counter >= 250 then
-			if G.LAST_SCORING_YIELD and (love.timer.getTime() - G.LAST_SCORING_YIELD) > Talisman.TIME_BETWEEN_SCORING_FRAMES and coroutine.running() then
-				coroutine.yield()
-			end
-			counter = 0
-		end
-	end
-	Talisman.calculating_joker = true
+	local iv = Talisman.calculating_joker
+	Talisman.calculating_joker = (iv or 0) + 1
+	--[[if not iv and self.area == G.jokers then
+		Talisman.scoring_joker_prev = self
+	end]]
+
 	local ret, trig = ccj(self, context)
-
-	if ret and type(ret) == "table" and ret.repetitions then
-		if not ret.card then
-			G.CARD_CALC_COUNTS.other = G.CARD_CALC_COUNTS.other or { 1, 1 }
-			G.CARD_CALC_COUNTS.other[2] = G.CARD_CALC_COUNTS.other[2] + ret.repetitions
-		else
-			G.CARD_CALC_COUNTS[ret.card] = G.CARD_CALC_COUNTS[ret.card] or { 1, 1 }
-			G.CARD_CALC_COUNTS[ret.card][2] = G.CARD_CALC_COUNTS[ret.card][2] + ret.repetitions
-		end
-	end
-	Talisman.calculating_joker = false
+	Talisman.calculating_joker = iv
 	return ret, trig
 end
