@@ -22,10 +22,10 @@ Talisman.config_tab = function()
         n = G.UIT.R,
         config = { align = "cm" },
         nodes = {
-            { n = G.UIT.O, config = { object = DynaText({ string = localize("talisman_string_A"), colours = { G.C.WHITE }, shadow = true, scale = 0.4 }) } },
+            { n = G.UIT.O, config = { object = DynaText({ string = localize("tal_feature_select"), colours = { G.C.WHITE }, shadow = true, scale = 0.4 }) } },
         }
     }, create_toggle({
-        label = localize("talisman_string_B"),
+        label = localize("tal_disable_anim"),
         ref_table = Talisman.config_file,
         ref_value = "disable_anims",
         callback = function(_set_toggle)
@@ -33,7 +33,7 @@ Talisman.config_tab = function()
         end
     }),
         create_option_cycle({
-            label = localize("talisman_string_C"),
+            label = localize("tal_score_limit"),
             scale = 0.8,
             w = 6,
             options = { localize("talisman_vanilla"), localize("talisman_omeganum") .. "(e10##1000)" },
