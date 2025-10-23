@@ -106,11 +106,7 @@ local function upadteText()
 	G.scoring_text[4] = localize("talisman_string_H") .. tostring(G.GAME.LAST_CALCS or localize("talisman_string_I")) .. " (" .. tostring(G.GAME.LAST_CALC_TIME and number_format(G.GAME.LAST_CALC_TIME) or "???") .. "s)"
 end
 
-local oldupd = love.update
-function love.update(dt, ...)
-	oldupd(dt, ...)
-	if not G.SCORING_COROUTINE then return end
-
+local function update_scoring(dt)
 	if collectgarbage("count") > 1024 * 1024 then
 		collectgarbage("collect")
 	end
@@ -135,6 +131,12 @@ function love.update(dt, ...)
 
 	G.LAST_SCORING_YIELD = love.timer.getTime()
 	assert(coroutine.resume(G.SCORING_COROUTINE))
+end
+
+local oldupd = love.update
+function love.update(dt, ...)
+	if G.SCORING_COROUTINE then update_scoring(dt) end
+	return oldupd(dt, ...)
 end
 
 Talisman.TIME_BETWEEN_SCORING_FRAMES = 0.03

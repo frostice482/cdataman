@@ -17,7 +17,6 @@ end
 
 local upd = Game.update
 function Game:update(dt)
-    upd(self, dt)
     if G.latest_uht and G.latest_uht.config and G.latest_uht.vals then
         tal_uht(G.latest_uht.config, G.latest_uht.vals)
         G.latest_uht = nil
@@ -27,6 +26,7 @@ function Game:update(dt)
       G.HUD:recalculate()
       Talisman.dollar_update = false
     end
+    return upd(self, dt)
 end
 
 local gfep = G.FUNCS.evaluate_play
