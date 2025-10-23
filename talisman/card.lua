@@ -6,23 +6,6 @@ function eval_card()
   return ret
 end--]]
 
-local sm = Card.start_materialize
-function Card:start_materialize(a,b,c)
-  if Talisman.config_file.disable_anims and (Talisman.calculating_joker or Talisman.calculating_score or Talisman.calculating_card) then return end
-  return sm(self,a,b,c)
-end
-
-local sd = Card.start_dissolve
-function Card:start_dissolve(a,b,c,d)
-  if Talisman.config_file.disable_anims and (Talisman.calculating_joker or Talisman.calculating_score or Talisman.calculating_card) then self:remove() return end
-  return sd(self,a,b,c,d)
-end
-
-local ss = Card.set_seal
-function Card:set_seal(a,b,immediate)
-  return ss(self,a,b,Talisman.config_file.disable_anims and (Talisman.calculating_joker or Talisman.calculating_score or Talisman.calculating_card) or immediate)
-end
-
 function Card:get_chip_e_bonus()
     if self.debuff then return 0 end
     if self.ability.set == 'Joker' then return 0 end
