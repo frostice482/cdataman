@@ -1,4 +1,4 @@
-Notation = {}
+local Notation = {}
 Notation.__index = Notation
 Notation.__tostring = function ()
     return "Notation"
