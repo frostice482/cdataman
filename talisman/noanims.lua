@@ -1,3 +1,71 @@
+G.FUNCS.evaluate_play = function(e)
+  Talisman.scoring_state = "intro"
+  text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_intro()
+  if not G.GAME.blind:debuff_hand(G.play.cards, poker_hands, text) then
+    Talisman.scoring_state = "main"
+    text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_main(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
+  else
+    Talisman.scoring_state = "debuff"
+    text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_debuff(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
+  end
+  Talisman.scoring_state = "final_scoring"
+  text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_final_scoring(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
+  Talisman.scoring_state = "after"
+  evaluate_play_after(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
+  Talisman.scoring_state = nil
+end
+
+local upd = Game.update
+function Game:update(dt)
+    upd(self, dt)
+    if G.latest_uht and G.latest_uht.config and G.latest_uht.vals then
+        tal_uht(G.latest_uht.config, G.latest_uht.vals)
+        G.latest_uht = nil
+    end
+    if Talisman.dollar_update then
+      G.HUD:get_UIE_by_ID('dollar_text_UI').config.object:update()
+      G.HUD:recalculate()
+      Talisman.dollar_update = false
+    end
+end
+
+local gfep = G.FUNCS.evaluate_play
+G.FUNCS.evaluate_play = function(e)
+	Talisman.calculating_score = true
+	local ret = gfep(e)
+	Talisman.calculating_score = false
+	return ret
+end
+
+--Easing fixes
+--Changed this to always work; it's less pretty but fine for held in hand things
+local edo = ease_dollars
+function ease_dollars(mod, instant)
+  if Talisman.config_file.disable_anims then--and (Talisman.calculating_joker or Talisman.calculating_score or Talisman.calculating_card) then
+    mod = mod or 0
+    if to_big(mod) > BigC.ZERO then inc_career_stat('c_dollars_earned', mod) end
+    G.GAME.dollars = G.GAME.dollars + mod
+    Talisman.dollar_update = true
+  else return edo(mod, instant) end
+end
+
+local sm = Card.start_materialize
+function Card:start_materialize(a,b,c)
+    if Talisman.config_file.disable_anims and (Talisman.calculating_joker or Talisman.calculating_score or Talisman.calculating_card) then return end
+    return sm(self,a,b,c)
+end
+
+local sd = Card.start_dissolve
+function Card:start_dissolve(a,b,c,d)
+    if Talisman.config_file.disable_anims and (Talisman.calculating_joker or Talisman.calculating_score or Talisman.calculating_card) then self:remove() return end
+    return sd(self,a,b,c,d)
+end
+
+local ss = Card.set_seal
+function Card:set_seal(a,b,immediate)
+    return ss(self,a,b,Talisman.config_file.disable_anims and (Talisman.calculating_joker or Talisman.calculating_score or Talisman.calculating_card) or immediate)
+end
+
 local cest = card_eval_status_text
 function card_eval_status_text(a,b,c,d,e,f)
     if not Talisman.config_file.disable_anims then cest(a,b,c,d,e,f) end
