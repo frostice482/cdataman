@@ -1449,8 +1449,10 @@ function Big:d_lambertw(z)
 end
 
 --- @class t.Omega.Low
+--- @field array number[]
+--- @field sign number
 
---- @return nil
+--- @return t.Omega.Low
 function Big:as_table()
     return {
         array = bigs[self],

@@ -51,26 +51,26 @@ function BalaNotation:format(l, places)
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
             return (n.sign == -1 and "-" or "").."e"..mantissa.."e"..e_ify(exponent)
         end
-    elseif n:isNaN() then
+    elseif l:isNaN() then
         return "nan"
-    elseif not n.array or not (n.isFinite and n:isFinite()) then
+    elseif not n.array or not l:isFinite() then
         return "Infinity"
-    elseif n.array[2] and n.asize == 2 and n.array[2] <= 8 then
+    elseif n.array[2] and l.asize == 2 and n.array[2] <= 8 then
         --eeeeeee1.234e56789
         local mantissa = 10^(n.array[1]-math.floor(n.array[1]))
         mantissa = math.floor(mantissa*10^places+0.5)/10^places
         local exponent = math.floor(n.array[1])
         return (n.sign == -1 and "-" or "")..string.rep("e", n.array[2]-1)..mantissa.."e"..e_ify(exponent)
-    elseif n.asize < 8 then
+    elseif l.asize < 8 then
         --e12#34#56#78
         local r = (n.sign == -1 and "-e" or "e")..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[2] or 1)
-        for i = 3, n.asize do
+        for i = 3, l.asize do
             r = r.."#"..e_ify((n.array[i] or 0)+1)
         end
         return r
     else
         --e12#34##5678
-        return (n.sign == -1 and "-e" or "e")..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[n.asize] or 0).."##"..e_ify(n.asize-2)
+        return (n.sign == -1 and "-e" or "e")..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[l.asize] or 0).."##"..e_ify(l.asize-2)
     end
 end
 
