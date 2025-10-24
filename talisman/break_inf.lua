@@ -13,12 +13,18 @@ if not _Big or err then return end
 
 Big = _Big()
 for k,v in pairs(BigC) do
-    BigC[k] = Big:new(v)
+    BigC[k] = Big:create(v)
 end
 
 Notations = require("big-num.notations")
 local constants = require("big-num.constants")
 BigC.E_MAX_SAFE_INTEGER = Big:create(constants.E_MAX_SAFE_INTEGER)
+
+local tsj = G.FUNCS.text_super_juice
+function G.FUNCS.text_super_juice(e, _amount)
+    if _amount > 10 then _amount = 10 end
+    return tsj(e, _amount)
+end
 
 -- We call this after init_game_object to leave room for mods that add more poker hands
 Talisman.igo = function(obj)
@@ -243,11 +249,6 @@ function scale_number(number, scale, max, e_switch_point)
     return scale
 end
 
-local tsj = G.FUNCS.text_super_juice
-function G.FUNCS.text_super_juice(e, _amount)
-    if _amount > 2 then _amount = 2 end
-    return tsj(e, _amount)
-end
 
 local max = math.max
 --don't return a Big unless we have to - it causes nativefs to break

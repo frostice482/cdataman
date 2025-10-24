@@ -49,13 +49,9 @@ target = "functions/button_callbacks.lua"
 pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.mult) == 'number' and G.GAME.current_round.current_hand.mult or 1)))) end"
 position = "at"
 payload = '''
-local num = 0
-if to_big(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1) > BigC.BIG then
-	num = math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1))))
-else
-	num = 1e300
-end
-if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, num) end
+local v = G.GAME.current_round.current_hand.mult or 1
+local juice = is_number(v) and (v < BigC.BIG and math.min(10, math.max(0, math.log(v, 1000) )) or 10) or 0
+if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, juice) end
 '''
 match_indent = true
 
@@ -65,13 +61,9 @@ target = "functions/button_callbacks.lua"
 pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.chips) == 'number' and G.GAME.current_round.current_hand.chips or 1)))) end"
 position = "at"
 payload = '''
-local num = 0
-if to_big(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1) > BigC.BIG then
-	num = math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1))))
-else
-	num = 1e300
-end
-if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, num) end
+local v = G.GAME.current_round.current_hand.chips or 1
+local juice = is_number(v) and (v < BigC.BIG and math.min(10, math.max(0, math.log(v, 1000) )) or 10) or 0
+if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, juice) end
 '''
 match_indent = true
 
