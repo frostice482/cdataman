@@ -70,8 +70,9 @@ end
 
 ------------------------------------------------------
 
+local _t = type
 function Big.is(instance)
-    return type(instance) == "cdata" and ffi.istype(instance, TalismanOmega)
+    return _t(instance) == "cdata" and ffi.istype(instance, TalismanOmega)
 end
 
 local function arraySizeOf(arr)
@@ -364,7 +365,7 @@ function Big:toString()
     return s
 end
 
-function log10LongString(str)
+local function log10LongString(str)
     return math.log(tonumber(string.sub(str, 1, LONG_STRING_MIN_LENGTH)), 10)+(string.len(str)- LONG_STRING_MIN_LENGTH);
 end
 
@@ -1456,7 +1457,8 @@ end
 function Big:as_table()
     return {
         array = bigs[self],
-        sign = self.sign
+        sign = self.sign,
+        __talisman = true
     }
 end
 

@@ -1,24 +1,17 @@
-local nativefs = require("nativefs")
+Big = require("big-num.omeganum")
+Notations = require("big-num.notations")
 
-BigC = {
-    ZERO = 0,
-    ONE = 1,
-    TEN = 10,
-    BIG = 1e308,
-    NBIG = -1e308,
-}
-
-local _Big, err = nativefs.load(Talisman.mod_path .. "/big-num/" .. Talisman.config_file.break_infinity .. ".lua")
-if not _Big or err then return end
-
-Big = _Big()
 for k,v in pairs(BigC) do
     BigC[k] = Big:create(v)
 end
-
-Notations = require("big-num.notations")
 local constants = require("big-num.constants")
 BigC.E_MAX_SAFE_INTEGER = Big:create(constants.E_MAX_SAFE_INTEGER)
+
+-- wow...
+local _t = type
+function type(v)
+    return Talisman.config_file.enable_compat and Big and Big.is(v) and "table" or _t(v)
+end
 
 local tsj = G.FUNCS.text_super_juice
 function G.FUNCS.text_super_juice(e, _amount)

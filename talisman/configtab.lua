@@ -17,30 +17,68 @@ if not SMODS or not JSON then
     end
 end
 
-Talisman.config_tab = function()
-    local tal_nodes = {{
+function Talisman.save_config()
+    nativefs.write(Talisman.mod_path .. "/config.lua", STR_PACK(Talisman.config_file))
+end
+
+Talisman.config_sections = {}
+
+function Talisman.config_sections.title()
+    return {
         n = G.UIT.R,
         config = { align = "cm" },
         nodes = {
-            { n = G.UIT.O, config = { object = DynaText({ string = localize("tal_feature_select"), colours = { G.C.WHITE }, shadow = true, scale = 0.4 }) } },
+            { n = G.UIT.T, config = { text = localize("tal_feature_select"), scale = 0.4 } }
         }
-    }, create_toggle({
+    }
+end
+
+function Talisman.config_sections.disable_anim()
+    return create_toggle({
         label = localize("tal_disable_anim"),
         ref_table = Talisman.config_file,
         ref_value = "disable_anims",
-        callback = function(_set_toggle)
-            nativefs.write(Talisman.mod_path .. "/config.lua", STR_PACK(Talisman.config_file))
+        callback = function()
+            Talisman.save_config()
         end
-    }),
-        create_option_cycle({
-            label = localize("tal_score_limit"),
-            scale = 0.8,
-            w = 6,
-            options = { localize("talisman_vanilla"), localize("talisman_omeganum") .. "(e10##1000)" },
-            opt_callback = 'talisman_upd_score_opt',
-            current_option = Talisman.config_file.score_opt_id,
-        })
-    }
+    })
+end
+
+function Talisman.config_sections.disable_omega()
+    return create_toggle({
+        label = localize("tal_disable_omega"),
+        ref_table = Talisman.config_file,
+        ref_value = "disable_omega",
+        callback = function(val)
+            if val == false then
+                require("talisman.break_inf")
+            end
+            Talisman.save_config()
+        end
+    })
+end
+
+function Talisman.config_sections.enable_type_compat()
+    return create_toggle({
+        label = localize("tal_enable_compat"),
+        ref_table = Talisman.config_file,
+        ref_value = "enable_compat",
+        callback = function()
+            Talisman.save_config()
+        end
+    })
+end
+
+--table.insert(Talisman.config_sections, Talisman.config_sections.title)
+table.insert(Talisman.config_sections, Talisman.config_sections.disable_anim)
+table.insert(Talisman.config_sections, Talisman.config_sections.disable_omega)
+table.insert(Talisman.config_sections, Talisman.config_sections.enable_type_compat)
+
+Talisman.config_tab = function()
+    local nodes = {}
+    for i,v in ipairs(Talisman.config_sections) do
+        table.insert(nodes, v())
+    end
     return {
         n = G.UIT.ROOT,
         config = {
@@ -52,7 +90,7 @@ Talisman.config_tab = function()
             padding = 0.2,
             colour = G.C.BLACK
         },
-        nodes = tal_nodes
+        nodes = nodes
     }
 end
 
@@ -74,11 +112,4 @@ G.FUNCS.talismanMenu = function(e)
         }),
         config = { offset = { x = 0, y = 10 } }
     }
-end
-
-G.FUNCS.talisman_upd_score_opt = function(e)
-    Talisman.config_file.score_opt_id = e.to_key
-    local score_opts = { "", "omeganum" }
-    Talisman.config_file.break_infinity = score_opts[e.to_key]
-    nativefs.write(Talisman.mod_path .. "/config.lua", STR_PACK(Talisman.config_file))
 end
