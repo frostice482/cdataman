@@ -10,7 +10,7 @@
 		"lord.ruby"
 	],
 	"description": "A talisman fork aiming to support high-scoring runs while keeping compat with other mods",
-	"prefix": "cdataman",
+	"prefix": "talisman",
 	"main_file": "smods.lua",
 	"priority": 0,
 	"badge_colour": "",
