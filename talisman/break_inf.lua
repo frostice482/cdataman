@@ -20,6 +20,12 @@ Notations = require("big-num.notations")
 local constants = require("big-num.constants")
 BigC.E_MAX_SAFE_INTEGER = Big:create(constants.E_MAX_SAFE_INTEGER)
 
+local tsj = G.FUNCS.text_super_juice
+function G.FUNCS.text_super_juice(e, _amount)
+    if _amount > 10 then _amount = 10 end
+    return tsj(e, _amount)
+end
+
 -- We call this after init_game_object to leave room for mods that add more poker hands
 Talisman.igo = function(obj)
     for _, v in pairs(obj.hands) do
