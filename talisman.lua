@@ -84,6 +84,7 @@ require("talisman.card")
 require("talisman.configtab")
 require("talisman.noanims")
 require("talisman.safety")
+require("talisman.debug")
 if not Talisman.F_NO_COROUTINE then
   require("talisman.coroutine")
 end
