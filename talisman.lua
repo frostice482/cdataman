@@ -59,16 +59,6 @@ Talisman = {
 local conf = nativefs.read(talisman_path.."/config.lua")
 if conf then
     Talisman.config_file = STR_UNPACK(conf)
-    if Talisman.config_file.break_infinity == "bignumber" then
-      Talisman.config_file.break_infinity = "omeganum"
-      Talisman.config_file.score_opt_id = 2
-    end
-    if Talisman.config_file.score_opt_id == 3 then
-      Talisman.config_file.score_opt_id = 2
-    end
-    if Talisman.config_file.break_infinity and type(Talisman.config_file.break_infinity) ~= 'string' then
-      Talisman.config_file.break_infinity = "omeganum"
-    end
 end
 
 local g_start_run = Game.start_run
@@ -79,12 +69,14 @@ function Game:start_run(args)
 end
 
 require("talisman.globals")
-require("talisman.break_inf")
 require("talisman.card")
 require("talisman.configtab")
 require("talisman.noanims")
 require("talisman.safety")
 require("talisman.debug")
+if not Talisman.config_file.disable_omega then
+  require("talisman.break_inf")
+end
 if not Talisman.F_NO_COROUTINE then
   require("talisman.coroutine")
 end

@@ -1,5 +1,13 @@
 --- @meta
 
+BigC = {
+  ZERO = 0,
+  ONE = 1,
+  TEN = 10,
+  BIG = 1e308,
+  NBIG = -1e308,
+}
+
 function is_big(x)
   return Big and Big.is(x)
 end
@@ -14,7 +22,7 @@ end
 function to_big(x, y)
   if type(x) == 'string' and x == "0" then --hack for when 0 is asked to be a bignumber need to really figure out the fix
     return 0
-  elseif Big and Big.array then
+  elseif Big then
     local result = Big:create(x)
     if y then result.sign = y end
     return result

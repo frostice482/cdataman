@@ -51,3 +51,24 @@ function save_run()
   save_run_hook()
   save_run_sanitize(G.ARGS.save_run, {})
 end
+
+local function copy_table_internal(obj, reflist)
+  if type(obj) ~= 'table' then return obj end
+  if Big.is(obj) then return obj end
+  if reflist[obj] then return reflist[obj] end
+
+  local copy = {}
+  reflist[obj] = copy
+  for k, v in pairs(obj) do
+      copy[copy_table_internal(k, reflist)] = copy_table_internal(v, reflist)
+  end
+  setmetatable(copy, copy_table_internal(getmetatable(obj), reflist))
+
+  return copy
+end
+
+local copy_table_hook = copy_table
+function copy_table(v)
+  if not Talisman.config_file.enable_compat or not Big then return copy_table_hook(v) end
+  return copy_table_internal(v, {})
+end

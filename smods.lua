@@ -43,12 +43,6 @@ if SMODS.current_mod then
     end
     return nil
   end
-  SMODS.current_mod.debug_info = function()
-    if Talisman and Talisman.config_file then
-      return {["Break Infinity"] = Talisman.config_file.break_infinity}
-    end
-    return {}
-  end
   SMODS.current_mod.description_loc_vars = function()
     return { background_colour = G.C.CLEAR, text_colour = G.C.WHITE, scale = 1.2 }
   end
