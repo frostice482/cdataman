@@ -1,3 +1,4 @@
 config.lua
 .vscode
 .lovelyignore
+*.zip
