@@ -2,3 +2,4 @@ config.lua
 .vscode
 .lovelyignore
 *.zip
+.luarc.json
