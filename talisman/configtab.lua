@@ -1,6 +1,6 @@
 local nativefs = require("nativefs")
 
-if not SMODS or not JSON then
+if not SMODS then
     local createOptionsRef = create_UIBox_options
     function create_UIBox_options()
         local contents = createOptionsRef()
@@ -8,7 +8,7 @@ if not SMODS or not JSON then
             minw = 5,
             button = "talismanMenu",
             label = {
-                localize({ type = "name_text", set = "Spectral", key = "c_talisman" })
+                "cdataman"
             },
             colour = G.C.GOLD
         })
@@ -74,35 +74,59 @@ table.insert(Talisman.config_sections, Talisman.config_sections.disable_anim)
 table.insert(Talisman.config_sections, Talisman.config_sections.disable_omega)
 table.insert(Talisman.config_sections, Talisman.config_sections.enable_type_compat)
 
-Talisman.config_tab = function()
+Talisman.config_ui_base = {
+    emboss = 0.05,
+    minh = 6,
+    r = 0.1,
+    minw = 10,
+    align = "cm",
+    padding = 0.2,
+    colour = G.C.BLACK
+}
+
+function Talisman.config_tab()
     local nodes = {}
     for i,v in ipairs(Talisman.config_sections) do
         table.insert(nodes, v())
     end
     return {
         n = G.UIT.ROOT,
-        config = {
-            emboss = 0.05,
-            minh = 6,
-            r = 0.1,
-            minw = 10,
-            align = "cm",
-            padding = 0.2,
-            colour = G.C.BLACK
-        },
+        config = Talisman.config_ui_base,
         nodes = nodes
     }
 end
 
-G.FUNCS.talismanMenu = function(e)
+function Talisman.credits_tab()
+    return {
+        n = G.UIT.ROOT,
+        config = Talisman.config_ui_base,
+        nodes = {
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "cdataman devs:", scale = 0.4 } }}, config = { padding = 0.1 } },
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "- frostice482", scale = 0.4 } }} },
+
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "Talisman devs:", scale = 0.4 } }}, config = { padding = 0.1 } },
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "- MathIsFun_", scale = 0.4 } }} },
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "- Mathguy24", scale = 0.4 } }} },
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "- jenwalter666", scale = 0.4 } }} },
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "- cg-223", scale = 0.4 } }} },
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "- lord.ruby", scale = 0.4 } }} },
+        }
+    }
+end
+
+function G.FUNCS.talismanMenu(e)
     local tabs = create_tabs({
         snap_to_nav = true,
         tabs = {
             {
-                label = localize({ type = "name_text", set = "Spectral", key = "c_talisman" }),
+                label = "cdataman",
                 chosen = true,
                 tab_definition_function = Talisman.config_tab
             },
+            {
+                label = "Credits",
+                tab_definition_function = Talisman.credits_tab
+            }
         }
     })
     G.FUNCS.overlay_menu {
@@ -113,3 +137,5 @@ G.FUNCS.talismanMenu = function(e)
         config = { offset = { x = 0, y = 10 } }
     }
 end
+
+G.UIDEF.tal_credits = Talisman.credits_tab

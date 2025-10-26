@@ -56,6 +56,15 @@ if SMODS.Scoring_Calculation then
   require("talisman.smods.scoring_calc")
 end
 
+SMODS.current_mod.extra_tabs = function()
+  return {
+    {
+      label = 'Credits',
+      tab_definition_function = G.UIDEF.tal_credits
+    }
+  }
+end
+
 --[[SMODS.Joker{
   key = "test",
   name = "Joker Test",
