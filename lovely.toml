@@ -349,3 +349,13 @@ G.ARGS.score_intensity.earned_score = SMODS.calculate_round_score(true)
 payload = '''
 G.ARGS.score_intensity.earned_score = math.min(to_number(SMODS.calculate_round_score(true)), 1e300)
 '''
+
+# sfx
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "sound = extra.edition and 'foil2' or extra.mult_mod and 'multhit1' or extra.Xmult_mod and 'multhit2' or 'generic1'"
+position = "at"
+payload = '''sound = extra.edition and 'foil2' or extra.mult_mod and 'multhit1' or extra.Xmult_mod and 'multhit2' or extra.Xchip_mod and 'talisman_xchip' or extra.Echip_mod and 'talisman_echip' or extra.Emult_mod and 'talisman_emult' or extra.EEchip_mod and 'talisman_eechip' or extra.EEmult_mod and 'talisman_eemult' or (extra.EEEchip_mod or extra.hyperchip_mod) and 'talisman_eeechip' or (extra.EEEmult_mod or extra.hypermult_mod) and 'talisman_eeemult' or 'generic1'
+'''
+match_indent = true
