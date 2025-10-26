@@ -1,0 +1,11 @@
+[manifest]
+version = "1.0.0"
+priority = 0
+
+[[patches]]
+[patches.regex]
+target = "engine/text.lua"
+pattern = '''love\.graphics\.newText\(self\.font\.FONT, c\)'''
+position = "at"
+payload = "self._global_get_text_cache(self.font.FONT, c)"
+

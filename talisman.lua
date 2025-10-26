@@ -74,6 +74,7 @@ require("talisman.configtab")
 require("talisman.noanims")
 require("talisman.safety")
 require("talisman.debug")
+require("talisman.optimization")
 if not Talisman.config_file.disable_omega then
   require("talisman.break_inf")
 end
