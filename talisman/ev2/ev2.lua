@@ -181,12 +181,13 @@ function IEVM:cycle_update()
 end
 
 function IEVM:update(dt_real, forced)
-    if Talisman.scoring_coroutine then return end
-
     local max_burst, interval =  self.max_burst, self.queue_dt
-    if G.SETTINGS.paused then
+    if Talisman.scoring_coroutine then
         max_burst = 1
-        interval = 1 / 33
+        interval = 1 / 10
+    elseif G.SETTINGS.paused then
+        max_burst = 1
+        interval = 1 / 30
     end
     local dt_total = G.TIMERS.TOTAL - self.lastTotalTime
     local buffered_dt = G.TIMERS.REAL - self.lastTime
