@@ -176,6 +176,11 @@ end
 --- @protected
 function IEVM:cycle_update()
     for k, queue in pairs(self.queues) do
+        if not queue.unblockable then
+            queue = EVMQueue()
+            for i,v in ipairs(queue) do queue:add(v) end
+            self.queues[k] = queue
+        end
         self:cycle_update_queue(queue)
     end
 end
