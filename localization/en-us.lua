@@ -17,6 +17,7 @@ return {
     tal_disable_anim = 'Disable Scoring Animations',
     tal_disable_omega = 'Disable OmegaNum (requires restart)',
     tal_enable_compat = 'Enable type compat',
+    tal_enable_ev2 = 'Enable Event V2',
     tal_calculating = 'Calculating...',
     tal_abort = 'Abort',
     tal_elapsed = 'Elapsed calculations',

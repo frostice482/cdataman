@@ -80,3 +80,10 @@ end
 if not Talisman.F_NO_COROUTINE then
   require("talisman.coroutine")
 end
+if Talisman.config_file.ev2 then
+  local load = love.load
+  function love.load()
+    load()
+    require("talisman.ev2.migrator"):tov2()
+  end
+end

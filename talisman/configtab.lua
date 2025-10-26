@@ -69,10 +69,77 @@ function Talisman.config_sections.enable_type_compat()
     })
 end
 
---table.insert(Talisman.config_sections, Talisman.config_sections.title)
-table.insert(Talisman.config_sections, Talisman.config_sections.disable_anim)
-table.insert(Talisman.config_sections, Talisman.config_sections.disable_omega)
-table.insert(Talisman.config_sections, Talisman.config_sections.enable_type_compat)
+local ev2_interval = { 60, 120, 240, 480, 960, 1920 }
+local ev2_accel = { 1, 2, 4, 8, 16, 32 }
+
+function Talisman.config_sections.enable_ev2()
+    return create_toggle({
+        label = localize("tal_enable_ev2"),
+        ref_table = Talisman.config_file,
+        ref_value = "ev2",
+        callback = function(val)
+            Talisman.save_config()
+            local m = require("talisman.ev2.migrator")
+            if val then
+                m:tov2()
+            else
+                m:tovanilla()
+            end
+        end
+    })
+end
+
+function Talisman.config_sections.ev2_interval()
+    local i = Talisman.config_file.ev2_interval
+    return { n = G.UIT.C, nodes = { create_option_cycle({
+        label = "EV2 interval",
+        scale = 0.8,
+        options = ev2_interval,
+        current_option = i and get_index(ev2_interval, i) or 1,
+        opt_callback = 'tal_ev2_interval'
+    }) }}
+end
+
+function G.FUNCS.tal_ev2_interval(arg)
+    Talisman.config_file.ev2_interval = arg.to_val
+    require("talisman.ev2.migrator").ev2.queue_dt = 1 / arg.to_val
+    Talisman.save_config()
+end
+
+function Talisman.config_sections.ev2_accel()
+    local i = Talisman.config_file.ev2_burst
+    return { n = G.UIT.C, nodes = { create_option_cycle({
+        label = "EV2 acceleration",
+        scale = 0.8,
+        options = ev2_accel,
+        current_option = i and get_index(ev2_accel, i) or 4,
+        opt_callback = 'tal_ev2_accel'
+    }) }}
+end
+
+function G.FUNCS.tal_ev2_accel(arg)
+    Talisman.config_file.ev2_burst = arg.to_val
+    require("talisman.ev2.migrator").ev2.max_burst = arg.to_val
+    Talisman.save_config()
+end
+
+function Talisman.config_sections.ev2_configs()
+    return {
+        n = G.UIT.R,
+        nodes = {
+            Talisman.config_sections.ev2_interval(),
+            Talisman.config_sections.ev2_accel(),
+        }
+    }
+end
+
+Talisman.config_sections_array = {
+    Talisman.config_sections.disable_anim,
+    Talisman.config_sections.disable_omega,
+    Talisman.config_sections.enable_type_compat,
+    Talisman.config_sections.enable_ev2,
+    Talisman.config_sections.ev2_configs
+}
 
 Talisman.config_ui_base = {
     emboss = 0.05,
@@ -86,7 +153,7 @@ Talisman.config_ui_base = {
 
 function Talisman.config_tab()
     local nodes = {}
-    for i,v in ipairs(Talisman.config_sections) do
+    for i,v in ipairs(Talisman.config_sections_array) do
         table.insert(nodes, v())
     end
     return {
