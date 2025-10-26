@@ -1,0 +1,23 @@
+[manifest]
+version = "1.0.0"
+priority = 1
+
+# fix base queue counter being 0 with ev2 enabled
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = "otherSize = otherSize + #v"
+position = "at"
+payload = '''
+otherSize = otherSize + (v.count or #v)
+'''
+match_indent = true
+
+[[patches]]
+[patches.regex]
+target = "game.lua"
+pattern = '''#\(G\.E_MANAGER\.queues and G\.E_MANAGER\.queues\.base or \{\}\)'''
+position = "at"
+payload = "G.E_MANAGER.queues.base.count or #G.E_MANAGER.queues.base"
+
+
