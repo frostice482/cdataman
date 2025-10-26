@@ -71,6 +71,12 @@ function IEVMQueue:clearAll()
     self.countUnblockable = 0
 end
 
+function IEVMQueue:addFrom(list)
+    for i,v in ipairs(list) do
+        self:add(v)
+    end
+end
+
 --- @type b.Evm.Queue | fun(): b.Evm.Queue
 local EVMQueue = IEVMQueue
 
@@ -98,10 +104,22 @@ function IEVM:init()
 end
 
 --- @param event balatro.Event
+function IEVM:get_queue(event)
+    local queue = self.queues[event]
+    if not queue.unblockable then
+        local nq = EVMQueue()
+        nq:addFrom(queue)
+        queue = nq
+        self.queues[event] = nq
+    end
+    return queue
+end
+
+--- @param event balatro.Event
 --- @param queue? balatro.EventManager.QueueType
 --- @param front? boolean
 function IEVM:add_event(event, queue, front)
-    self.queues[queue or 'base']:add(event, front)
+    self:get_queue(queue or 'base'):add(event, front)
 end
 
 function IEVM:clear_queue(queue, exception)
@@ -176,12 +194,7 @@ end
 --- @protected
 function IEVM:cycle_update()
     for k, queue in pairs(self.queues) do
-        if not queue.unblockable then
-            queue = EVMQueue()
-            for i,v in ipairs(queue) do queue:add(v) end
-            self.queues[k] = queue
-        end
-        self:cycle_update_queue(queue)
+        self:cycle_update_queue(self:get_queue(k))
     end
 end
 
