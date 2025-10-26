@@ -246,16 +246,6 @@ end
 '''
 match_indent = true
 
-# sfx
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "sound = extra.edition and 'foil2' or extra.mult_mod and 'multhit1' or extra.Xmult_mod and 'multhit2' or 'generic1'"
-position = "at"
-payload = '''sound = extra.edition and 'foil2' or extra.mult_mod and 'multhit1' or extra.Xmult_mod and 'multhit2' or extra.Xchip_mod and 'talisman_xchip' or extra.Echip_mod and 'talisman_echip' or extra.Emult_mod and 'talisman_emult' or extra.EEchip_mod and 'talisman_eechip' or extra.EEmult_mod and 'talisman_eemult' or (extra.EEEchip_mod or extra.hyperchip_mod) and 'talisman_eeechip' or (extra.EEEmult_mod or extra.hypermult_mod) and 'talisman_eeemult' or 'generic1'
-'''
-match_indent = true
-
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
@@ -412,4 +402,100 @@ if scoring_hand and scoring_hand[i] and scoring_hand[i].edition then
 		hyper_mult = true})
 	end
 end
+'''
+
+# my fix for this one is really scuffed
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = 'if edition_effects.jokers.x_mult_mod then'
+position = 'before'
+match_indent = true
+payload = '''
+if edition_effects.jokers.x_mult_mod then
+	mult = mod_mult(mult*edition_effects.jokers.x_mult_mod)
+	update_hand_text({delay = 0}, {mult = mult})
+	card_eval_status_text(_card, 'jokers', nil, percent, nil, {
+		message = localize{type='variable',key='a_xmult',vars={edition_effects.jokers.x_mult_mod}},
+		x_mult_mod =  edition_effects.jokers.x_mult_mod,
+		colour =  G.C.EDITION,
+		edition = true})
+end
+if G.jokers.cards and G.jokers.cards[i] and G.jokers.cards[i].edition then
+	local trg = G.jokers.cards[i]
+	local edi = trg.edition
+	if edi.x_chips then
+		hand_chips = mod_chips(hand_chips * edi.x_chips)
+		update_hand_text({delay = 0}, {chips = hand_chips})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = 'X'.. edi.x_chips ,
+		edition = true,
+		x_chips = true})
+	end
+	if edi.e_chips then
+		hand_chips = mod_chips(hand_chips ^ edi.e_chips)
+		update_hand_text({delay = 0}, {chips = hand_chips})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = '^'.. edi.e_chips ,
+		edition = true,
+		e_chips = true})
+	end
+	if edi.ee_chips then
+		hand_chips = mod_chips(hand_chips:arrow(2, edi.ee_chips))
+		update_hand_text({delay = 0}, {chips = hand_chips})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = '^^'.. edi.ee_chips ,
+		edition = true,
+		ee_chips = true})
+	end
+	if edi.eee_chips then
+		hand_chips = mod_chips(hand_chips:arrow(3, edi.eee_chips))
+		update_hand_text({delay = 0}, {chips = hand_chips})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = '^^^'.. edi.eee_chips ,
+		edition = true,
+		eee_chips = true})
+	end
+	if edi.hyper_chips and type(edi.hyper_chips) == 'table' then
+		hand_chips = mod_chips(hand_chips:arrow(edi.hyper_chips[1], edi.hyper_chips[2]))
+		update_hand_text({delay = 0}, {chips = hand_chips})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = (edi.hyper_chips[1] > 5 and ('{' .. edi.hyper_chips[1] .. '}') or string.rep('^', edi.hyper_chips[1])) .. edi.hyper_chips[2] ,
+		edition = true,
+		eee_chips = true})
+	end
+	if edi.e_mult then
+		mult = mod_mult(mult ^ edi.e_mult)
+		update_hand_text({delay = 0}, {mult = mult})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = '^'.. edi.e_mult ..' ' .. localize('k_mult'),
+		edition = true,
+		e_mult = true})
+	end
+	if edi.ee_mult then
+		mult = mod_mult(mult:arrow(2, edi.ee_mult))
+		update_hand_text({delay = 0}, {mult = mult})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = '^^'.. edi.ee_mult ..' ' .. localize('k_mult'),
+		edition = true,
+		ee_mult = true})
+	end
+	if edi.eee_mult then
+		mult = mod_mult(mult:arrow(3, edi.eee_mult))
+		update_hand_text({delay = 0}, {mult = mult})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = '^^^'.. edi.eee_mult ..' ' .. localize('k_mult'),
+		edition = true,
+		eee_mult = true})
+	end
+	if edi.hyper_mult and type(edi.hyper_mult) == 'table' then
+		mult = mod_mult(mult:arrow(edi.hyper_mult[1], edi.hyper_mult[2]))
+		update_hand_text({delay = 0}, {mult = mult})
+		card_eval_status_text(trg, 'extra', nil, percent, nil,
+		{message = (edi.hyper_mult[1] > 5 and ('{' .. edi.hyper_mult[1] .. '}') or string.rep('^', edi.hyper_mult[1])) .. edi.hyper_mult[2] ..' ' .. localize('k_mult'),
+		edition = true,
+		hyper_mult = true})
+	end
+end
+edition_effects.jokers.x_mult_mod = nil
 '''
