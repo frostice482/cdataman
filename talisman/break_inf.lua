@@ -38,12 +38,8 @@ local nf = number_format
 function number_format(num, e_switch_point)
     if not is_big(num) then return nf(num, e_switch_point) end
 
-    local low = num:as_table()
-    if low.str then return low.str end
     if num.asize > 2 then
-        local str = Notations.Balatro:format(num, 3)
-        low.str = str
-        return str
+        return Notations.Balatro:format(num, 3)
     end
 
     if num < G.E_SWITCH_POINT then
@@ -212,19 +208,12 @@ function scale_number(number, scale, max, e_switch_point)
         number = Big:ensureBig(number)
     end
 
-    local nl = number:as_table()
-
-    if nl.scale then return nl.scale end
-    if nl.e and nl.e == 10 ^ 1000 then
-        scale = scale * math.floor(math.log(max * 10, 10)) / 7
-    end
-
     if not e_switch_point and number.asize > 2 then             --this is noticable faster than >= on the raw number for some reason
         if number.asize <= 2 and (number:get_array()[1] or 0) <= 999 then --gross hack
             scale = scale * math.floor(math.log(max * 10, 10)) / 7    --this divisor is a constant so im precalcualting it
         else
             scale = scale * math.floor(math.log(max * 10, 10)) /
-            math.floor(math.max(7, string.len(nl.str or number_format(number)) - 1))
+            math.floor(math.max(7, string.len(number_format(number)) - 1))
         end
     elseif to_big(number) >= (e_switch_point and to_big(e_switch_point) or G.E_SWITCH_POINT) then
         if number.asize <= 2 and (number:get_array()[1] or 0) <= 999 then --gross hack
@@ -238,7 +227,6 @@ function scale_number(number, scale, max, e_switch_point)
     end
 
     scale = math.min(3, scale:to_number())
-    nl.scale = scale
     return scale
 end
 
