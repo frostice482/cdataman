@@ -26,7 +26,9 @@ local Big = {}
 OmegaMeta = {
     __index = {
         m = false,
-        e = false
+        e = false,
+        array = {},
+        sign = 1
     }
 }
 
