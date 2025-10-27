@@ -1,2 +1,2 @@
-rm -f cdataman.zzip
-zip -r cdataman.zip *
+rm -f cdataman.zip
+zip -ru cdataman.zip *
