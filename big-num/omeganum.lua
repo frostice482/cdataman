@@ -1575,6 +1575,4 @@ function love.update(...)
     return update(...)
 end
 
-BB = B
-
 return Big

@@ -1,12 +1,6 @@
 --- @meta
 
-BigC = {
-  ZERO = 0,
-  ONE = 1,
-  TEN = 10,
-  BIG = 1e308,
-  NBIG = -1e308,
-}
+BigC = copy_table(require('big-num.constants'))
 
 function is_big(x)
   return Big and Big.is(x)
