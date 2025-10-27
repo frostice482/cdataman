@@ -12,7 +12,7 @@ function Migrator:tov2()
 
 	for k, list in pairs(self.vanilla.queues) do
 		for i, event in ipairs(list) do
-			self.ev2.queues[k]:add(event)
+			self.ev2:get_queue(k):add(event)
 		end
 		self.vanilla.queues[k] = {}
 	end
@@ -25,6 +25,10 @@ function Migrator:tovanilla()
 
 	for k, list in pairs(self.ev2.queues) do
 		local targetList = self.vanilla.queues[k]
+		if not targetList then
+			targetList = {}
+			self.vanilla.queues[k] = targetList
+		end
 		list.all:each(function (value, node) table.insert(targetList, value) end)
 		list:clearAll()
 	end

@@ -202,7 +202,7 @@ function IEVM:clear_queue(queue, exception)
         return
     end
 
-    self.queues[queue]:clear()
+    self:get_queue(queue):clear()
 end
 
 --- @protected
