@@ -1,0 +1,66 @@
+[manifest]
+version = "1.0.0"
+priority = 0
+
+# Patch save manager to do Talisman things
+[[patches]]
+[patches.pattern]
+target = 'engine/save_manager.lua'
+pattern = 'CHANNEL = love.thread.getChannel("save_request")'
+position = 'after'
+payload = '''
+function tal_compress_and_save(_file, _data, talisman)
+  local save_string = type(_data) == 'table' and STR_PACK(_data) or _data
+  local fallback_save = STR_PACK({GAME = {won = true}}) --just bare minimum to not crash, maybe eventually display some info?
+  if talisman == 'omeganum' then
+    fallback_save = "if not OmegaMeta then " .. fallback_save
+  else
+    fallback_save = "if OmegaMeta then " .. fallback_save
+  end
+  fallback_save = fallback_save .. " end"
+  save_string = fallback_save .. " " .. save_string
+  save_string = love.data.compress('string', 'deflate', save_string, 1)
+  love.filesystem.write(_file,save_string)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'engine/save_manager.lua'
+pattern = "compress_and_save(prefix_profile..'save.jkr', request.save_table)"
+position = 'at'
+payload = "tal_compress_and_save(prefix_profile..'save.jkr', request.save_table, request.talisman)"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = "type = 'save_run',"
+position = 'after'
+payload = 'talisman = not Talisman.config_file.disable_omega and "omeganum" or nil,'
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "engine/string_packer.lua"
+pattern = 'if type_v == "table" then'
+position = "after"
+payload = '''
+if v.__talisman then
+	local v0 = "to_big({"
+	for i, v in pairs(v.array) do
+		v0 = v0 .. ("["..i.."] = "..(v or 0)) .. ", "
+	end
+	v0 = v0 .. "},"..v.sign..")"
+	v = v0
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "engine/string_packer.lua"
+pattern = 'if v.is and v:is(Object) then'
+position = "at"
+payload = 'elseif v.is and v:is(Object) then'
+match_indent = true
