@@ -75,3 +75,23 @@ end
 function evaluate_play_after(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
 '''
 match_indent = true
+
+# Scoring coroutine
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = "check_for_unlock({type = 'play_all_hearts'})"
+position = 'before'
+payload = 'if Talisman.scoring_coroutine then return false end '
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+G.STATE_COMPLETE = false
+return true
+'''
+position = 'before'
+payload = 'if Talisman.scoring_coroutine then return false end '
+match_indent = false

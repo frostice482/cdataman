@@ -49,23 +49,11 @@ function number_format(num, e_switch_point)
     return Notations.Balatro:format(num, 3)
 end
 
-local mf = math.floor
-function math.floor(x)
-    if is_big(x) then return x.floor and x:floor() or x end
-    return mf(x)
-end
-
-local mc = math.ceil
-function math.ceil(x)
-    if is_big(x) then return x:ceil() end
-    return mc(x)
-end
+require("talisman.break_math")
 
 function lenient_bignum(x)
-    if type(x) == "number" then return x end
-    if to_big(x) < to_big(1e300) and to_big(x) > to_big(-1e300) then
-        return x:to_number()
-    end
+    if not x or type(x) == "number" then return x end
+    if x < BigC.BIG and x > BigC.NBIG then return x:to_number() end
     return x
 end
 
@@ -74,7 +62,7 @@ local sns = score_number_scale
 function score_number_scale(scale, amt)
     local ret = sns(scale, amt)
     if is_big(ret) then
-        if ret > to_big(1e300) then return 1e300 end
+        if ret > BigC.BIG then return constants.BIG end
         return ret:to_number()
     end
     return ret
@@ -83,43 +71,13 @@ end
 local gftsj = G.FUNCS.text_super_juice
 function G.FUNCS.text_super_juice(e, _amount)
     if is_big(_amount) then
-        if _amount > to_big(1e300) then
-            _amount = 1e300
+        if _amount > BigC.BIG then
+            _amount = constants.BIG
         else
             _amount = _amount:to_number()
         end
     end
     return gftsj(e, _amount)
-end
-
-local l10 = math.log10
-function math.log10(x)
-    if is_big(x) then
-        if x.log10 then return lenient_bignum(x:log10()) end
-        return lenient_bignum(l10(math.min(x:to_number(), 1e300)))
-    end
-    return lenient_bignum(l10(x))
-end
-
-local lg = math.log
-function math.log(x, y)
-    if not y then y = 2.718281828459045 end
-    if is_big(x) then
-        if x.log then return lenient_bignum(x:log(to_big(y))) end
-        if x.logBase then return lenient_bignum(x:logBase(to_big(y))) end
-        return lenient_bignum(lg(math.min(x:to_number(), 1e300), y))
-    end
-    return lenient_bignum(lg(x, y))
-end
-
-function math.exp(x)
-    local big_e = to_big(2.718281828459045)
-
-    if type(big_e) == "number" then
-        return lenient_bignum(big_e ^ x)
-    else
-        return lenient_bignum(big_e:pow(x))
-    end
 end
 
 local B100 = to_big(100)
@@ -228,60 +186,6 @@ function scale_number(number, scale, max, e_switch_point)
 
     scale = math.min(3, scale:to_number())
     return scale
-end
-
-
-local max = math.max
---don't return a Big unless we have to - it causes nativefs to break
-function math.max(x, y)
-    if is_big(x) or is_big(y) then
-        x = to_big(x)
-        y = to_big(y)
-        if (x > y) then
-            return x
-        else
-            return y
-        end
-    else
-        return max(x, y)
-    end
-end
-
-local min = math.min
-function math.min(x, y)
-    if is_big(x) or is_big(y) then
-        x = to_big(x)
-        y = to_big(y)
-        if (x < y) then
-            return x
-        else
-            return y
-        end
-    else
-        return min(x, y)
-    end
-end
-
-local sqrt = math.sqrt
-function math.sqrt(x)
-    if is_big(x) then
-        return x:pow(0.5)
-    end
-    return sqrt(x)
-end
-
-local old_abs = math.abs
-function math.abs(x)
-    if is_big(x) then
-        x = to_big(x)
-        if x < BigC.ZERO then
-            return -1 * x
-        else
-            return x
-        end
-    else
-        return old_abs(x)
-    end
 end
 
 if SMODS then
