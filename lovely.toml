@@ -26,23 +26,6 @@ source = "nativefs.lua"
 before = "main.lua"
 name = "nativefs"
 
-# Use formatted numbers for poker hand scores
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = "{n=G.UIT.T, config={text = G.GAME.hands[handname].chips, scale = 0.45, colour = G.C.UI.TEXT_LIGHT}},"
-position = "at"
-payload = "{n=G.UIT.T, config={text = number_format(G.GAME.hands[handname].chips, 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}},"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = "{n=G.UIT.T, config={text = G.GAME.hands[handname].mult, scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}"
-position = "at"
-payload = "{n=G.UIT.T, config={text = number_format(G.GAME.hands[handname].mult, 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}"
-match_indent = true
-
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -69,90 +52,10 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "functions/misc_functions.lua"
-pattern = "if type(G.GAME.current_round.current_hand.chips) ~= 'number' or type(G.GAME.current_round.current_hand.mult) ~= 'number' then"
-position = "at"
-payload = "if not is_number(G.GAME.current_round.current_hand.chips) or not is_number(G.GAME.current_round.current_hand.mult) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "main.lua"
-pattern = "if type(G.GAME.current_round.current_hand.chips) ~= 'number' or type(G.GAME.current_round.current_hand.mult) ~= 'number' then"
-position = "at"
-payload = "if not is_number(G.GAME.current_round.current_hand.chips) or not is_number(G.GAME.current_round.current_hand.mult) then"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "local delta = (type(vals[name]) == 'number' and type(G.GAME.current_round.current_hand[name]) == 'number') and (vals[name] - G.GAME.current_round.current_hand[name]) or 0"
-position = "at"
-payload = "local delta = (is_number(vals[name]) and is_number(G.GAME.current_round.current_hand[name])) and (vals[name] - G.GAME.current_round.current_hand[name]) or 0"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "local delta = (type(vals.chips) == 'number' and type(G.GAME.current_round.current_hand.chips) == 'number') and (vals.chips - G.GAME.current_round.current_hand.chips) or 0"
-position = "at"
-payload = "local delta = (is_number(vals.chips) and is_number(G.GAME.current_round.current_hand.chips)) and (vals.chips - G.GAME.current_round.current_hand.chips) or 0"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "local delta = (type(vals.mult) == 'number' and type(G.GAME.current_round.current_hand.mult) == 'number')and (vals.mult - G.GAME.current_round.current_hand.mult) or 0"
-position = "at"
-payload = "local delta = (is_number(vals.mult) and is_number(G.GAME.current_round.current_hand.mult))and (vals.mult - G.GAME.current_round.current_hand.mult) or 0"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "if delta < 0 then delta = ''..delta; col = G.C.RED"
-position = "at"
-payload = "if to_big(delta) < BigC.ZERO then delta = number_format(delta); col = G.C.RED"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "elseif delta > 0 then delta = '+'..delta"
-position = "at"
-payload = "elseif to_big(delta) > BigC.ZERO then delta = '+'..number_format(delta)"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "else delta = ''..delta"
-position = "at"
-payload = "else delta = number_format(delta)"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = "functions/UI_definitions.lua"
 pattern = "{n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante'}}, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = 2*scale}),id = 'ante_UI_count'}},"
 position = "at"
 payload = "{n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante_disp'}}, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = scale_number(G.GAME.round_resets.ante, 2*scale, 100)}),id = 'ante_UI_count'}},--{n=G.UIT.T, config={text = number_format(G.GAME.round_resets.ante), lang = G.LANGUAGES['en-us'], scale = scale_number(G.GAME.round_resets.ante, 2*scale, 100), colour = G.C.IMPORTANT, shadow = true,id = 'ante_UI_count'}},"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "game.lua"
-pattern = "ante = 1,"
-position = "after"
-payload = "ante_disp = number_format(1),"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "G.GAME.round_resets.ante = G.GAME.round_resets.ante + mod"
-position = "after"
-payload = "G.GAME.round_resets.ante_disp = number_format(G.GAME.round_resets.ante)"
 match_indent = true
 
 [[patches]]
@@ -163,15 +66,6 @@ position = "before"
 payload = '''
 if Big and G.STATE == G.STATES.MENU then self.config.scale = to_number(self.config.scale) end
 '''
-match_indent = true
-
-# poker hand level fixes
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = "{n=G.UIT.T, config={text = localize('k_level_prefix')..G.GAME.hands[handname].level, scale = 0.5, colour = G.C.UI.TEXT_DARK}}"
-position = "at"
-payload = "{n=G.UIT.T, config={text = localize('k_level_prefix')..number_format(G.GAME.hands[handname].level), scale = 0.5, colour = G.C.UI.TEXT_DARK}}"
 match_indent = true
 
 [[patches]]
