@@ -33,3 +33,19 @@ if Big and Big.is(v) then ret_t[k] = v:as_table()
 elseif v.is and v:is(Object) then ret_t[k] = [["]].."MANUAL_REPLACE"..[["]]
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '{n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.HAND_LEVELS[math.min(7, G.GAME.hands[handname].level)], minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={'
+position = "at"
+payload = '{n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[handname].level)))], minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={'
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = 'G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.min(vals.level, 7)]'
+position = "at"
+payload = 'G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.floor(to_number(math.min(7, vals.level)))]'
+match_indent = true
