@@ -16,6 +16,7 @@ create_option_cycle({
 	current_option = get_index(G.SPEED_OPTIONS, G.SETTINGS.GAMESPEED) or -1
 }),
 '''
+match_indent = true
 
 [[patches]]
 [patches.pattern]
@@ -23,3 +24,4 @@ target = 'game.lua'
 pattern = '''G.ACC = math.min((G.ACC or 0) + dt*0.2*self.SETTINGS.GAMESPEED, 16)'''
 position = "at"
 payload = '''G.ACC = (G.ACC or 0) + dt*0.2*self.SETTINGS.GAMESPEED'''
+match_indent = true
