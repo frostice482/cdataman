@@ -92,7 +92,7 @@ end
 function Talisman.config_sections.ev2_interval()
     local i = Talisman.config_file.ev2_interval
     return { n = G.UIT.C, nodes = { create_option_cycle({
-        label = "EV2 interval",
+        label = "EV2 frequency",
         scale = 0.8,
         options = ev2_interval,
         current_option = i and get_index(ev2_interval, i) or 1,
