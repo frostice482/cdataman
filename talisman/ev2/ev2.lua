@@ -135,6 +135,7 @@ function IEVMQueue:clearAll()
 end
 
 function IEVMQueue:addFrom(list)
+    if not list then return end
     for i,v in ipairs(list) do
         self:add(v)
     end
@@ -169,7 +170,8 @@ end
 --- @param event balatro.Event
 function IEVM:get_queue(event)
     local queue = self.queues[event]
-    if not queue.unblockable then
+    if not queue or not queue.unblockable then
+        print("event queues for", event, "is lost")
         local nq = EVMQueue()
         nq:addFrom(queue)
         queue = nq
