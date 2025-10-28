@@ -70,7 +70,7 @@ function Talisman.config_sections.enable_type_compat()
 end
 
 local ev2_interval = { 60, 120, 240, 480, 960, 1920 }
-local ev2_accel = { 1, 2, 4, 8, 16, 32 }
+local ev2_accel = { 1, 2, 4, 8, 16, 32, 64 }
 
 function Talisman.config_sections.enable_ev2()
     return create_toggle({
