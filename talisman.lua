@@ -76,17 +76,9 @@ require("talisman.configtab")
 require("talisman.noanims")
 require("talisman.safety")
 require("talisman.debug")
-require("talisman.optimization")
 if not Talisman.config_file.disable_omega then
   require("talisman.break_inf")
 end
 if not Talisman.F_NO_COROUTINE then
   require("talisman.coroutine")
-end
-if Talisman.config_file.ev2 then
-  local load = love.load
-  function love.load()
-    load()
-    require("talisman.ev2.migrator"):tov2()
-  end
 end
