@@ -68,8 +68,6 @@ function Game:start_run(args)
   return ret
 end
 
-G.SPEED_OPTIONS = { 0.5, 1, 2, 4, 8, 12, 24, 48, 96, 192 }
-
 require("talisman.globals")
 require("talisman.card")
 require("talisman.configtab")
