@@ -801,7 +801,7 @@ if eee_chips > 0 then
 end
 
 local hyper_chips = card:get_chip_hyper_bonus()
-if is_big(hyper_chips) and hyper_chips[1] > 0 and hyper_chips[2] > 0 then
+if type(hyper_chips) == 'table' and hyper_chips[1] > 0 and hyper_chips[2] > 0 then
 	ret.hyper_chips = hyper_chips
 end
 
@@ -821,7 +821,7 @@ if eee_mult > 0 then
 end
 
 local hyper_mult = card:get_chip_hyper_mult()
-if is_big(hyper_mult) and hyper_mult[1] > 0 and hyper_mult[2] > 0 then
+if type(hyper_mult) == 'table' and hyper_mult[1] > 0 and hyper_mult[2] > 0 then
 	ret.hyper_mult = hyper_mult
 end
 '''
@@ -1292,7 +1292,7 @@ pattern = 'CHANNEL = love.thread.getChannel("save_request")'
 position = 'after'
 payload = '''
 function tal_compress_and_save(_file, _data, talisman)
-  local save_string = is_big(_data) and STR_PACK(_data) or _data
+  local save_string = type(_data) == 'table' and STR_PACK(_data) or _data
   local fallback_save = STR_PACK({GAME = {won = true}}) --just bare minimum to not crash, maybe eventually display some info?
   if talisman == 'bignumber' then
     fallback_save = "if not BigMeta then " .. fallback_save
