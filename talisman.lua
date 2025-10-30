@@ -143,7 +143,7 @@ if Talisman.config_file.break_infinity then
 
   local nf = number_format
   function number_format(num, e_switch_point)
-      if type(num) == 'table' then
+      if is_big(num) then
           --num = to_big(num)
           if num.str then return num.str end
           if num:arraySize() > 2 then
@@ -162,12 +162,12 @@ if Talisman.config_file.break_infinity then
 
   local mf = math.floor
   function math.floor(x)
-      if type(x) == 'table' then return x.floor and x:floor() or x end
+      if is_big(x) then return x.floor and x:floor() or x end
       return mf(x)
   end
   local mc = math.ceil
   function math.ceil(x)
-      if type(x) == 'table' then return x:ceil() end
+      if is_big(x) then return x:ceil() end
       return mc(x)
   end
 
@@ -183,7 +183,7 @@ function lenient_bignum(x)
   local sns = score_number_scale
   function score_number_scale(scale, amt)
     local ret = sns(scale, amt)
-    if type(ret) == "table" then
+    if is_big(ret) then
       if ret > to_big(1e300) then return 1e300 end
       return ret:to_number()
     end
@@ -192,7 +192,7 @@ function lenient_bignum(x)
 
   local gftsj = G.FUNCS.text_super_juice
   function G.FUNCS.text_super_juice(e, _amount)
-    if type(_amount) == "table" then
+    if is_big(_amount) then
       if _amount > to_big(1e300) then
         _amount = 1e300
       else
@@ -204,7 +204,7 @@ function lenient_bignum(x)
 
   local l10 = math.log10
   function math.log10(x)
-      if type(x) == 'table' then
+      if is_big(x) then
         if x.log10 then return lenient_bignum(x:log10()) end
         return lenient_bignum(l10(math.min(x:to_number(),1e300)))
       end
@@ -214,7 +214,7 @@ function lenient_bignum(x)
   local lg = math.log
   function math.log(x, y)
       if not y then y = 2.718281828459045 end
-      if type(x) == 'table' then
+      if is_big(x) then
         if x.log then return lenient_bignum(x:log(to_big(y))) end
         if x.logBase then return lenient_bignum(x:logBase(to_big(y))) end
         return lenient_bignum(lg(math.min(x:to_number(),1e300),y))
@@ -387,7 +387,7 @@ function lenient_bignum(x)
 
   local tsj = G.FUNCS.text_super_juice
   function G.FUNCS.text_super_juice(e, _amount)
-    if type(_amount) == 'table' then
+    if is_big(_amount) then
       if _amount > to_big(2) then _amount = 2 end
     else
       if _amount > 2 then _amount = 2 end
@@ -398,7 +398,7 @@ function lenient_bignum(x)
   local max = math.max
   --don't return a Big unless we have to - it causes nativefs to break
   function math.max(x, y)
-    if type(x) == 'table' or type(y) == 'table' then
+    if is_big(x) or is_big(y) then
     x = to_big(x)
     y = to_big(y)
     if (x > y) then
@@ -411,7 +411,7 @@ function lenient_bignum(x)
 
   local min = math.min
   function math.min(x, y)
-    if type(x) == 'table' or type(y) == 'table' then
+    if is_big(x) or is_big(y) then
     x = to_big(x)
     y = to_big(y)
     if (x < y) then
@@ -424,7 +424,7 @@ function lenient_bignum(x)
 
   local sqrt = math.sqrt
   function math.sqrt(x)
-    if type(x) == 'table' then
+    if is_big(x) then
       if getmetatable(x) == BigMeta then return x:sqrt() end
       if getmetatable(x) == OmegaMeta then return x:pow(0.5) end
     end
@@ -435,7 +435,7 @@ function lenient_bignum(x)
 
   local old_abs = math.abs
   function math.abs(x)
-    if type(x) == 'table' then
+    if is_big(x) then
     x = to_big(x)
     if (x < to_big(0)) then
       return -1 * x
@@ -447,7 +447,7 @@ function lenient_bignum(x)
 end
 
 function is_big(x)
-  return type(x) == 'table' and ((x.e and x.m) or (x.array and x.sign))
+  return is_big(x) and ((x.e and x.m) or (x.array and x.sign))
 end
 
 function is_number(x)
@@ -480,7 +480,7 @@ function to_big(x, y)
   end
 end
 function to_number(x)
-  if type(x) == 'table' and (getmetatable(x) == BigMeta or getmetatable(x) == OmegaMeta) then
+  if is_big(x) and (getmetatable(x) == BigMeta or getmetatable(x) == OmegaMeta) then
     return x:to_number()
   else
     return x
