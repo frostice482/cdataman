@@ -13,9 +13,9 @@ Cdataman requires [Lovely](https://github.com/ethangreen-dev/lovely-injector) to
 
 ### Cryptid (0.5.13)
 
-- Value manipulation that reaches e300 won't apply
+- Value manipulation that reaches e300 or above won't apply
 - Enabling type compat will cause crash
-- No true solution for now
+- Solution: Use [crypted](https://github.com/frostice482/crypted) fork
 
 ### Overflow (1.0.4)
 
