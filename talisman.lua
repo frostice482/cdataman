@@ -341,7 +341,7 @@ function lenient_bignum(x)
     if not G.PROFILES[G.SETTINGS.profile].career_stats[stat] then G.PROFILES[G.SETTINGS.profile].career_stats[stat] = 0 end
     G.PROFILES[G.SETTINGS.profile].career_stats[stat] = G.PROFILES[G.SETTINGS.profile].career_stats[stat] + (mod or 0)
     -- Make sure this isn't ever a talisman number
-    if type(G.PROFILES[G.SETTINGS.profile].career_stats[stat]) == 'table' then
+    if is_big(G.PROFILES[G.SETTINGS.profile].career_stats[stat]) then
       if G.PROFILES[G.SETTINGS.profile].career_stats[stat] > to_big(1e300) then
         G.PROFILES[G.SETTINGS.profile].career_stats[stat] = to_big(1e300)
       elseif G.PROFILES[G.SETTINGS.profile].career_stats[stat] < to_big(-1e300) then

@@ -329,10 +329,10 @@ position = "before"
 line_prepend = "$indent"
 payload = '''
 if Big then
-	if type(self.strings[k].W) == 'table' then
+	if is_big(self.strings[k].W) then
 		self.strings[k].W = to_number(self.strings[k].W)
 	end
-	if type(self.strings[k].H) == 'table' then
+	if is_big(self.strings[k].H) then
 		self.strings[k].H = to_number(self.strings[k].H)
 	end
 end
@@ -1446,14 +1446,14 @@ target = 'functions/misc_functions.lua'
 pattern = "AC[k].vol = (not G.video_organ and G.STATE == G.STATES.SPLASH) and 0 or AC[k].vol and v.volfunc(AC[k].vol) or 0"
 position = 'after'
 payload = '''
-if type(AC[k].vol) == "table" then
+if is_big(AC[k].vol) then
 	if AC[k].vol > to_big(1e300) then
 		AC[k].vol = 1e300
 	else
 		AC[k].vol = to_number(AC[k].vol)
 	end
 end
-if type(AC[k].per) == "table" then
+if is_big(AC[k].per) then
 	if AC[k].per > to_big(1e300) then
 		AC[k].per = 1e300
 	else
@@ -1468,7 +1468,7 @@ match_indent = true
 target = 'functions/button_callbacks.lua'
 pattern = "_F.intensity = ((G.pack_cards and not G.pack_cards.REMOVED) or (G.TAROT_INTERRUPT)) and 0 or math.max(0., math.log(G.ARGS.score_intensity.earned_score, 5)-2)"
 position = 'after'
-payload = '''if type(_F.intensity) == "table" then
+payload = '''if is_big(_F.intensity) then
 	if _F.intensity > to_big(1e300) then
 		_F.intensity = 1e300
 	else
