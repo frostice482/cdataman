@@ -122,6 +122,15 @@ G.FUNCS.talisman_upd_score_opt = function(e)
   Talisman.config_file.break_infinity = score_opts[e.to_key]
   nativefs.write(talisman_path .. "/config.lua", STR_PACK(Talisman.config_file))
 end
+
+function is_big(x)
+  return type(x) == "table" and ((x.e and x.m) or (x.array and x.sign))
+end
+
+function is_number(x)
+  return type(x) == 'number' or is_big(x)
+end
+
 if Talisman.config_file.break_infinity then
   Big, err = nativefs.load(talisman_path.."/big-num/"..Talisman.config_file.break_infinity..".lua")
   if not err then Big = Big() else Big = nil end
@@ -444,14 +453,6 @@ function lenient_bignum(x)
     end
     else return old_abs(x) end
   end
-end
-
-function is_big(x)
-  return is_big(x) and ((x.e and x.m) or (x.array and x.sign))
-end
-
-function is_number(x)
-  return type(x) == 'number' or is_big(x)
 end
 
 function to_big(x, y)
