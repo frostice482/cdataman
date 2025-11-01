@@ -69,10 +69,28 @@ function Talisman.config_sections.enable_type_compat()
     })
 end
 
+function Talisman.config_sections.type_compat_alert(nodes)
+    for i,chk in ipairs(localize('tal_enable_compat_warning')) do
+        table.insert(nodes, {
+            n = G.UIT.R,
+            config = { align = 'cm' },
+            nodes = {{
+                n = G.UIT.T,
+                config = {
+                    text = chk,
+                    scale = 0.3,
+                    colour = G.C.ORANGE
+                }
+            }}
+        })
+    end
+end
+
 Talisman.config_sections_array = {
     Talisman.config_sections.disable_anim,
     Talisman.config_sections.disable_omega,
-    Talisman.config_sections.enable_type_compat
+    Talisman.config_sections.enable_type_compat,
+    Talisman.config_sections.type_compat_alert,
 }
 
 Talisman.config_ui_base = {
@@ -88,7 +106,10 @@ Talisman.config_ui_base = {
 function Talisman.config_tab()
     local nodes = {}
     for i,v in ipairs(Talisman.config_sections_array) do
-        table.insert(nodes, v())
+        local n = v(nodes)
+        if n then
+            table.insert(nodes, n)
+        end
     end
     return {
         n = G.UIT.ROOT,

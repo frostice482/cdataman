@@ -17,6 +17,10 @@ return {
     tal_disable_anim = 'Disable Scoring Animations',
     tal_disable_omega = 'Disable OmegaNum (requires restart)',
     tal_enable_compat = 'Enable type compat',
+    tal_enable_compat_warning = {
+        'Warning: Type compat does not work with some mods,',
+        'and instead will cause unexpected crash when enabled.'
+    },
     tal_calculating = 'Calculating...',
     tal_abort = 'Abort',
     tal_elapsed = 'Elapsed calculations',
