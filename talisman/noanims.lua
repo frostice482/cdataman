@@ -1,18 +1,18 @@
 G.FUNCS.evaluate_play = function(e)
-  Talisman.scoring_state = "intro"
+  if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "intro" end
   text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_intro()
   if not G.GAME.blind:debuff_hand(G.play.cards, poker_hands, text) then
-    Talisman.scoring_state = "main"
+    if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "main" end
     text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_main(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
   else
-    Talisman.scoring_state = "debuff"
+    if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "debuff" end
     text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_debuff(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
   end
-  Talisman.scoring_state = "final_scoring"
+  if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "final_scoring" end
   text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_final_scoring(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
-  Talisman.scoring_state = "after"
+  if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "after" end
   evaluate_play_after(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
-  Talisman.scoring_state = nil
+  if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = nil end
 end
 
 local upd = Game.update
