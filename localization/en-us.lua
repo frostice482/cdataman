@@ -8,12 +8,7 @@ return {
         }
     },
     test = "j",
-    talisman_vanilla = 'Vanilla (e308)',
-    talisman_bignum = 'BigNum (ee308)',
-    talisman_omeganum = 'OmegaNum',
 
-    --tal_feature_select = 'Select features to enable:',
-    --tal_score_limit = 'Score Limit (requires game restart)',
     tal_disable_anim = 'Disable Scoring Animations',
     tal_disable_omega = 'Disable OmegaNum (requires restart)',
     tal_enable_compat = 'Enable type compat',
@@ -26,8 +21,6 @@ return {
     tal_elapsed = 'Elapsed calculations',
     tal_current_state = 'Currently scoring',
     tal_card_prog = 'Scored card progress',
-    --tal_joker_prog = 'Scored joker progress',
-    --tal_remaining = 'Cards yet to score',
     tal_luamem = 'Lua memory',
     tal_last_elapsed = 'Calculations last played hand',
     tal_unknown = 'Unknown',
