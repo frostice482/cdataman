@@ -17,11 +17,6 @@ Cdataman requires [Lovely](https://github.com/ethangreen-dev/lovely-injector) to
 - Enabling type compat will cause crash
 - Solution: Use [crypted](https://github.com/frostice482/crypted) fork
 
-### Overflow (1.0.4)
-
-- Overrides `to_big` completely if SMODS or Talisman is not present
-- Solution: install a placeholder Talisman mod
-
 ## Limitations
 - High scores will not be saved to your profile (this is to prevent your profile save from being incompatible with an unmodified instance of Balatro)
 - Savefiles created/opened with Talisman aren't backwards-compatible with unmodified versions of Balatro.
