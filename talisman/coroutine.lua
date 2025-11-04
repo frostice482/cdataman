@@ -1,49 +1,62 @@
 --scoring coroutine
+
 local oldplay = G.FUNCS.evaluate_play
-function G.FUNCS.evaluate_play(...)
-	Talisman.scoring_coroutine = coroutine.create(oldplay)
-	Talisman.scoring_yield = love.timer.getTime()
+local co = {
+	TIME_BETWEEN_SCORING_FRAMES = 0.03
+}
+Talisman.coroutine = co
 
-	local success, err = coroutine.resume(Talisman.scoring_coroutine, ...)
-	if not success then
-		error(err)
-	end
+function co.create_state()
+	return {
+		coroutine = coroutine.create(oldplay),
+		yield = love.timer.getTime(),
+		time = 0,
+		calculations = 0
+	}
 end
 
-local tal_aborted
-function G.FUNCS.tal_abort()
-	tal_aborted = true
+function co.initialize_state()
+	Talisman.scoring_coroutine = co.create_state()
+	G.SCORING_COROUTINE = Talisman.scoring_coroutine
 end
 
-local function clear_state()
-	tal_aborted = nil
+function co.resume(...)
+	if not Talisman.scoring_coroutine then return end
+	Talisman.scoring_coroutine.yield = love.timer.getTime()
+	assert(coroutine.resume(Talisman.scoring_coroutine.coroutine, ...))
+end
 
+function co.shouldyield()
+	return Talisman.scoring_coroutine
+		and Talisman.scoring_coroutine.calculations % 250 == 0
+		and Talisman.scoring_coroutine.yield
+		and love.timer.getTime() - Talisman.scoring_coroutine.yield > co.TIME_BETWEEN_SCORING_FRAMES
+		and coroutine.running()
+end
+
+function co.clear_state()
 	Talisman.scoring_coroutine = nil
-	Talisman.scoring_time = 0
-	Talisman.scoring_joker_count = 0
-	Talisman.scoring_state = nil
-
-	Talisman.scoring_card_prev = nil
-	Talisman.scoring_joker_prev = nil
+	G.SCORING_COROUTINE = nil
 
 	Talisman.calculating_score = nil
 	Talisman.calculating_joker = nil
 	Talisman.calculating_card = nil
+	co.aborted = nil
 end
 
-local function stopping()
-	G.FUNCS.exit_overlay_menu()
+function co.forcestop()
+	if not Talisman.scoring_coroutine then return end
 
-	if tal_aborted and Talisman.scoring_state == "main" then
+	G.FUNCS.exit_overlay_menu()
+	if co.aborted and Talisman.scoring_state == "main" then
 		evaluate_play_final_scoring(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
 	end
-
-	G.GAME.LAST_CALCS = Talisman.scoring_joker_count
-	G.GAME.LAST_CALC_TIME = Talisman.scoring_time
-	clear_state()
+	G.GAME.LAST_CALCS = Talisman.scoring_coroutine.calculations
+	G.GAME.LAST_CALC_TIME = Talisman.scoring_coroutine.time
+	co.clear_state()
 end
 
-function Talisman.create_UIBox_scoring_text(texts)
+function co.create_text_ui(texts)
 	local nodes = {}
 
 	table.insert(nodes, {
@@ -83,7 +96,7 @@ function Talisman.create_UIBox_scoring_text(texts)
 	}
 end
 
-function Talisman.create_UIBox_scoring_overlay(texts)
+function co.create_overlay_ui(texts)
 	return {
 		n = G.UIT.ROOT,
 		config = {
@@ -93,12 +106,12 @@ function Talisman.create_UIBox_scoring_overlay(texts)
 			r = 0.1,
 			colour = { G.C.GREY[1], G.C.GREY[2], G.C.GREY[3], 0.7 }
 		},
-		nodes = { Talisman.create_UIBox_scoring_text(texts) }
+		nodes = { co.create_text_ui(texts) }
 	}
 end
 
-function Talisman.scoring_overlay()
-	Talisman.scoring_text = {
+function co.overlay()
+	co.scoring_text = {
 		"", -- currently calculating
 		"", -- card progress
 		--"", -- joker progress
@@ -106,91 +119,75 @@ function Talisman.scoring_overlay()
 	}
 	if G.GAME.LAST_CALCS then
 		local text = string.format("%s: %d (%.2fs)", localize("tal_last_elapsed"), G.GAME.LAST_CALCS, G.GAME.LAST_CALC_TIME)
-		table.insert(Talisman.scoring_text, text)
+		table.insert(co.scoring_text, text)
 	end
 
 	G.FUNCS.overlay_menu({
-		definition = Talisman.create_UIBox_scoring_overlay(Talisman.scoring_text),
+		definition = co.create_overlay_ui(co.scoring_text),
 		config = { align = "cm", offset = { x = 0, y = 0 }, major = G.ROOM_ATTACH, bond = 'Weak' }
 	})
 end
 
-local function upadte_scoring_text()
-	Talisman.scoring_text[1] = string.format("%s: %d (%.2fs)", localize("tal_elapsed"), Talisman.scoring_joker_count, Talisman.scoring_time)
+function co.update_text()
+	if not Talisman.scoring_coroutine or not co.scoring_text then return end
 
-	if Talisman.scoring_card_prev then
-		local card = Talisman.scoring_card_prev
+	co.scoring_text[1] = string.format("%s: %d (%.2fs)", localize("tal_elapsed"), Talisman.scoring_coroutine.calculations, Talisman.scoring_coroutine.time)
+
+	if Talisman.scoring_coroutine.card then
+		local card = Talisman.scoring_coroutine.card
 		local desc = card.area == G.hand and 'hand' or 'play'
-		Talisman.scoring_text[2] = string.format("%s: %d/%d (%s)", localize("tal_card_prog"), card.rank, #card.area.cards, desc or '???')
+		co.scoring_text[2] = string.format("%s: %d/%d (%s)", localize("tal_card_prog"), card.rank, #card.area.cards, desc or '???')
 	else
-		Talisman.scoring_text[2] = string.format("%s: -", localize("tal_card_prog"))
+		co.scoring_text[2] = string.format("%s: -", localize("tal_card_prog"))
 	end
 
 	--[[
-	if Talisman.scoring_joker_prev then
-		local card = Talisman.scoring_joker_prev
+	if Talisman.scoring_coroutine.joker then
+		local card = Talisman.scoring_coroutine.joker
 		Talisman.scoring_text[3] = string.format("%s: %d/%d", localize("tal_joker_prog"), card.rank, #card.area.cards)
 	else
 		Talisman.scoring_text[3] = string.format("%s: -", localize("tal_joker_prog"))
 	end
 	]]
 
-	Talisman.scoring_text[3] = string.format("%s: %.2fMB", localize("tal_luamem"), collectgarbage('count') / 1024)
+	co.scoring_text[3] = string.format("%s: %.2fMB", localize("tal_luamem"), collectgarbage('count') / 1024)
 end
 
-function Talisman.update_scoring(dt)
+function co.update(dt)
+	if not Talisman.scoring_coroutine then return end
+
 	if collectgarbage("count") > 1024 * 1024 then
 		collectgarbage("collect")
 	end
 
-	if coroutine.status(Talisman.scoring_coroutine) == "dead" or tal_aborted then
-		stopping()
+	if coroutine.status(Talisman.scoring_coroutine.coroutine) == "dead" or co.aborted then
+		co.forcestop()
 		return
 	end
 
+	co.resume()
+
 	if not G.OVERLAY_MENU then
-		Talisman.scoring_overlay()
+		co.overlay()
 	else
-		Talisman.scoring_time = (Talisman.scoring_time or 0) + dt
-		upadte_scoring_text()
+		Talisman.scoring_coroutine.time = Talisman.scoring_coroutine.time + dt
+		co.update_text()
 	end
+end
 
-	--this coroutine allows us to stagger GC cycles through
-	--the main source of waste in terms of memory (especially w joker retriggers) is through local variables that become garbage
-	--this practically eliminates the memory overhead of scoring
-	--event queue overhead seems to not exist if Talismans Disable Scoring Animations is off.
-	--event manager has to wait for scoring to finish until it can keep processing events anyways.
+function G.FUNCS.evaluate_play(...)
+	co.initialize_state()
+	co.resume(...)
+end
 
-	Talisman.scoring_yield = love.timer.getTime()
-	assert(coroutine.resume(Talisman.scoring_coroutine))
+function G.FUNCS.tal_abort()
+	co.aborted = true
 end
 
 local oldupd = love.update
 function love.update(dt, ...)
-	if Talisman.scoring_coroutine then Talisman.update_scoring(dt) end
+	if Talisman.scoring_coroutine then co.update(dt) end
 	return oldupd(dt, ...)
-end
-
-Talisman.TIME_BETWEEN_SCORING_FRAMES = 0.03
--- 30 fps during scoring
--- we dont want overhead from updates making scoring much slower
--- originally 10 fps, I think 30 fps is a good way to balance it while making it look smooth, too
--- wrap everything in calculating contexts so we can do more things with it
-
-clear_state()
-
-function Talisman.shouldyield()
-	return Talisman.scoring_joker_count % 250 == 0
-		and Talisman.scoring_yield
-		and love.timer.getTime() - Talisman.scoring_yield > Talisman.TIME_BETWEEN_SCORING_FRAMES
-		and coroutine.running()
-end
-
-function Talisman.yieldjoker()
-	Talisman.scoring_joker_count = Talisman.scoring_joker_count + 1
-	if Talisman.shouldyield() then
-		coroutine.yield()
-	end
 end
 
 local ec = eval_card
@@ -201,9 +198,9 @@ function eval_card(card, ctx)
 	Talisman.calculating_card = (iv or 0) + 1
 	if not iv then
 		if card.area == G.hand or card.area == G.play then
-			Talisman.scoring_card_prev = card
+			Talisman.scoring_coroutine.card = card
 		--[[elseif card.area == G.jokers then
-			Talisman.scoring_joker_prev = card
+			Talisman.scoring_coroutine.joker = card
 		]]
 		end
 	end
@@ -217,12 +214,13 @@ end
 local ccj = Card.calculate_joker
 function Card:calculate_joker(context)
 	if not Talisman.scoring_coroutine then return ccj(self, context) end
-	Talisman.yieldjoker()
+	Talisman.scoring_coroutine.calculations = Talisman.scoring_coroutine.calculations + 1
+	if co.shouldyield() then coroutine.yield() end
 
 	local iv = Talisman.calculating_joker
 	Talisman.calculating_joker = (iv or 0) + 1
 	--[[if not iv and self.area == G.jokers then
-		Talisman.scoring_joker_prev = self
+		Talisman.scoring_coroutine.joker = self
 	end]]
 
 	local ret, trig = ccj(self, context)
