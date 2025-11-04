@@ -8,17 +8,20 @@ return {
 		}
 	},
 	test = "j",
-	talisman_vanilla = 'Gốc (e308)',
-	talisman_bignum = 'BigNum (ee308)',
-	talisman_omeganum = 'OmegaNum',
 
-	tal_feature_select = 'Chọn tính năng để bật:',
 	tal_disable_anim = 'Tắt Hoạt Ảnh Ghi Điểm',
-	tal_score_limit = 'Giới Hạn Điểm (yêu cầu khởi động lại)',
+    tal_disable_omega = 'Disable OmegaNum (requires restart)', -- not localized yet
+    tal_enable_compat = 'Enable type compat', -- not localized yet
+    tal_enable_compat_warning = {
+        'Warning: Type compat does not work with some mods,', -- not localized yet
+        'and instead will cause unexpected crash when enabled.' -- not localized yet
+    },
 	tal_calculating = 'Đang tính toán...',
 	tal_abort = 'Huỷ bỏ',
 	tal_elapsed = 'Phép tính đã thực hiện',
-	--tal_remaining = 'Số lá chưa ghi điểm',
+    tal_current_state = 'Currently scoring', -- not localized yet
+    tal_card_prog = 'Scored card progress', -- not localized yet
+    tal_luamem = 'Lua memory', -- not localized yet
 	tal_last_elapsed = 'Phép tính tay bài trước đó',
 	tal_unknown = 'Không rõ',
 
