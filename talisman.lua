@@ -41,8 +41,9 @@ function init_localization()
 end
 
 Talisman = {config_file = {disable_anims = false, break_infinity = "omeganum", score_opt_id = 2}, mod_path = talisman_path}
-if nativefs.read(talisman_path.."/config.lua") then
-    Talisman.config_file = STR_UNPACK(nativefs.read(talisman_path.."/config.lua"))
+local config_read_result = nativefs.read(talisman_path.."/config.lua")
+if config_read_result then
+    Talisman.config_file = STR_UNPACK(config_read_result)
     if Talisman.config_file.break_infinity == "bignumber" then
       Talisman.config_file.break_infinity = "omeganum"
       Talisman.config_file.score_opt_id = 2
@@ -69,6 +70,28 @@ if not SMODS or not JSON then
   end
 end
 
+Talisman.notations = {
+  loc_keys = {
+    "talisman_notations_hypere",
+    -- "talisman_notations_letter",
+    "talisman_notations_array"
+  },
+  filenames = {
+    "Balatro",
+    -- "LetterNotation",
+    "ArrayNotation"
+  }
+}
+
+local function getlocs(key_array)
+  local ret = {}
+
+  for _,entry in ipairs(key_array) do
+    table.insert(ret, localize(entry))
+  end
+  return ret
+end
+
 Talisman.config_tab = function()
                 tal_nodes = {{n=G.UIT.R, config={align = "cm"}, nodes={
                   {n=G.UIT.O, config={object = DynaText({string = localize("talisman_string_A"), colours = {G.C.WHITE}, shadow = true, scale = 0.4})}},
@@ -80,9 +103,17 @@ Talisman.config_tab = function()
                   label = localize("talisman_string_C"),
                   scale = 0.8,
                   w = 6,
-                  options = {localize("talisman_vanilla"), localize("talisman_omeganum") .. "(e10##1000)"},
+                  options = {localize("talisman_vanilla"), localize("talisman_omeganum") .. "(e308##e308)"},
                   opt_callback = 'talisman_upd_score_opt',
                   current_option = Talisman.config_file.score_opt_id,
+                }),
+                create_option_cycle({
+                  label = localize("talisman_notation"),
+                  scale = 0.8,
+                  w = 6,
+                  options = getlocs(Talisman.notations.loc_keys),
+                  opt_callback = 'talisman_upd_notation_opt',
+                  current_option = Talisman.config_file.notation_id,
                 })}
                 return {
                 n = G.UIT.ROOT,
@@ -122,6 +153,14 @@ G.FUNCS.talisman_upd_score_opt = function(e)
   Talisman.config_file.break_infinity = score_opts[e.to_key]
   nativefs.write(talisman_path .. "/config.lua", STR_PACK(Talisman.config_file))
 end
+
+G.FUNCS.talisman_upd_notation_opt = function(e)
+  Talisman.config_file.notation_id = e.to_key
+  Talisman.config_file.notation_key = Talisman.notations.filenames[e.to_key]
+  nativefs.write(talisman_path .. "/config.lua", STR_PACK(Talisman.config_file))
+end
+
+
 if Talisman.config_file.break_infinity then
   Big, err = nativefs.load(talisman_path.."/big-num/"..Talisman.config_file.break_infinity..".lua")
   if not err then Big = Big() else Big = nil end
@@ -141,13 +180,18 @@ if Talisman.config_file.break_infinity then
       return obj
   end
 
+  local override_non_bigs = true
+
   local nf = number_format
   function number_format(num, e_switch_point)
-      if type(num) == 'table' then
+      if type(num) == 'table' or override_non_bigs then
           --num = to_big(num)
+          if override_non_bigs then
+            num = to_big(num)
+          end
           if num.str then return num.str end
           if num:arraySize() > 2 then
-            local str = Notations.Balatro:format(num, 3)
+            local str = Notations[Talisman.config_file.notation_key]:format(num, 3)
             num.str = str
             return str
           end
@@ -155,7 +199,7 @@ if Talisman.config_file.break_infinity then
           if (num or 0) < (to_big(G.E_SWITCH_POINT) or 0) then
               return nf(num:to_number(), e_switch_point)
           else
-            return Notations.Balatro:format(num, 3)
+            return Notations[Talisman.config_file.notation_key]:format(num, 3)
           end
       else return nf(num, e_switch_point) end
   end

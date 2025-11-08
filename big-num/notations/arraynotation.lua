@@ -1,0 +1,32 @@
+local lovely = require("lovely")
+local nativefs = require("nativefs")
+Notation = nativefs.load(Talisman.mod_path.."/big-num/notations/notation.lua")()
+ArrayNotation = {}
+ArrayNotation.__index = ArrayNotation
+ArrayNotation.__tostring = function ()
+    return "ArrayNotation"
+end
+setmetatable(ArrayNotation, Notation)
+
+function ArrayNotation:new()
+    return setmetatable({}, ArrayNotation)
+end
+
+function ArrayNotation:format(n, places)
+    local str = "{"
+
+    local entries = #n.array
+
+    local decimals = math.max(3 - entries, 0)
+
+    local i = 0
+    for _,entry in pairs(n.array) do
+        i = i + 1
+        local formatted = decimals > 0 and Notation.format_mantissa(entry, decimals) or math.floor(entry)
+        str = str .. formatted .. (i ~= entries and ", " or "")
+    end
+    str = str .. "}"
+    return str
+end
+
+return ArrayNotation
