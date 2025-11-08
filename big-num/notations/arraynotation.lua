@@ -18,12 +18,21 @@ function ArrayNotation:format(n, places)
     local entries = #n.array
 
     local decimals = math.max(3 - entries, 0)
-
+    local shortening_point = 6 --6 array elements before we truncate
+    local shorten = entries > shortening_point
     local i = 0
     for _,entry in pairs(n.array) do
         i = i + 1
-        local formatted = decimals > 0 and Notation.format_mantissa(entry, decimals) or math.floor(entry)
-        str = str .. formatted .. (i ~= entries and ", " or "")
+        if not shorten then
+            local formatted = decimals > 0 and Notation.format_mantissa(entry, decimals) or math.floor(entry)
+            str = str .. formatted .. (i ~= entries and ", " or "")
+        else
+            if i < 3 or i >= (entries - 1) then
+                local formatted = decimals > 0 and Notation.format_mantissa(entry, decimals) or math.floor(entry)
+                formatted = i .. ": " .. formatted
+                str = str .. formatted .. (i ~= entries and ", " or "")
+            end
+        end
     end
     str = str .. "}"
     return str
