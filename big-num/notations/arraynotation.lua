@@ -3,6 +3,7 @@ local nativefs = require("nativefs")
 Notation = nativefs.load(Talisman.mod_path.."/big-num/notations/notation.lua")()
 ArrayNotation = {}
 ArrayNotation.__index = ArrayNotation
+ArrayNotation.E_SWITCH_POINT = 10000
 ArrayNotation.__tostring = function ()
     return "ArrayNotation"
 end
