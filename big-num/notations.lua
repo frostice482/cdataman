@@ -14,6 +14,7 @@ Notations = {
     DynamicNotation = nativefs.load(Talisman.mod_path.."/big-num/notations/dynamicnotation.lua")(),
     Balatro = nativefs.load(Talisman.mod_path.."/big-num/notations/Balatro.lua")(),
     ArrayNotation = nativefs.load(Talisman.mod_path.."/big-num/notations/arraynotation.lua")(),
+    AnteNotation = nativefs.load(Talisman.mod_path.."/big-num/notations/antenotation.lua")(),
 }
 
 return Notations

@@ -74,12 +74,14 @@ Talisman.notations = {
   loc_keys = {
     "talisman_notations_hypere",
     -- "talisman_notations_letter",
-    "talisman_notations_array"
+    "talisman_notations_array",
+    -- "k_ante"
   },
   filenames = {
     "Balatro",
     -- "LetterNotation",
-    "ArrayNotation"
+    "ArrayNotation",
+    -- "AnteNotation",
   }
 }
 
@@ -196,7 +198,7 @@ if Talisman.config_file.break_infinity then
             return str
           end
           G.E_SWITCH_POINT = Notations[Talisman.config_file.notation_key].E_SWITCH_POINT or G.E_SWITCH_POINT or 100000000000
-          if ((num or 0) < (to_big(G.E_SWITCH_POINT) or 0)) and not notat.always_use then
+          if ((num or 0) < (to_big(G.E_SWITCH_POINT) or 0)) and not Notations[Talisman.config_file.notation_key].always_use then
               return nf(num:to_number(), e_switch_point)
           else
             return Notations[Talisman.config_file.notation_key]:format(num, 3)

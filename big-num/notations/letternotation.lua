@@ -12,7 +12,7 @@ function LetterNotation:new()
     return setmetatable({}, LetterNotation)
 end
 
-local letters = "abcdefghijklmnopqrstuvwxyz"
+local letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 function LetterNotation:format(n, places)
     return "haha,"
