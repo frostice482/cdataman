@@ -176,7 +176,6 @@ function co.update(dt)
 end
 
 function G.FUNCS.evaluate_play(...)
-	if Talisman.F_NO_COROUTINE or G.SETTINGS.futil and G.SETTINGS.futil.asyncScoring.gfep then return oldplay(...) end
 	co.initialize_state()
 	co.resume(...)
 end
