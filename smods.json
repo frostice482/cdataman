@@ -11,7 +11,7 @@
 	"priority": 0,
 	"badge_colour": "",
 	"badge_text_colour": "",
-	"version": "3.2.1",
+	"version": "3.2.2",
 	"provides": [
 		"Talisman (2.6)"
 	]

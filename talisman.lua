@@ -53,7 +53,8 @@ Talisman = {
     score_opt_id = 2
   },
   mod_path = talisman_path,
-  F_NO_COROUTINE = false
+  F_NO_COROUTINE = false,
+  cdataman = true
 }
 
 local conf = nativefs.read(talisman_path.."/config.lua")
