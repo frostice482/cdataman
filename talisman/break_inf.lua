@@ -102,7 +102,7 @@ function get_blind_amount(ante)
 
     local amounts = amts[G.GAME.modifiers.scaling or 1]
     if not amounts then
-        if SMODS then SMODS.get_blind_amount(ante)
+        if SMODS then return SMODS.get_blind_amount(ante)
         else return 0 end
     end
 
