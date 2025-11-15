@@ -22,7 +22,8 @@ local log = math.log
 function math.log(x, y)
 	if is_big(x) then x = x:to_number() end
 	if is_big(y) then y = y:to_number() end
-    return log(x, y)
+    if y then return log(x, y) end
+    return log(x)
 end
 
 function math.exp(x)
