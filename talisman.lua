@@ -1,22 +1,8 @@
-local lovely = require("lovely")
 local nativefs = require("nativefs")
+local talisman_path = _mod_dir_cdataman
 
-local info = nativefs.getDirectoryItemsInfo(lovely.mod_dir)
-local talisman_path = ""
-for i, v in pairs(info) do
-  local base = lovely.mod_dir .. "/" .. v.name
-  if nativefs.getInfo(base .. "/talisman/smods/ind_effect.lua") and not nativefs.getInfo(base .. "/.lovelyignore") then
-    talisman_path = base
-    break
-  end
-end
-
-if not nativefs.getInfo(talisman_path) then
-    error('Could not find proper Talisman folder.\nPlease make sure that Talisman is installed correctly and the folders arent nested.')
-end
-
-nativefs.mount(talisman_path..'/talisman', 'talisman')
-nativefs.mount(talisman_path..'/big-num', 'big-num')
+assert(nativefs.mount(talisman_path..'/talisman', 'talisman'))
+assert(nativefs.mount(talisman_path..'/big-num', 'big-num'))
 
 -- "Borrowed" from Trance
 local function load_file_with_fallback2(a, aa)
