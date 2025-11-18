@@ -1,19 +1,21 @@
 local lovely = require("lovely")
 local nativefs = require("nativefs")
-BaseLetterNotation = nativefs.load(Talisman.mod_path.."/big-num/notations/baseletternotation.lua")()
-
+Notation = nativefs.load(Talisman.mod_path.."/big-num/notations/notation.lua")()
 LetterNotation = {}
 LetterNotation.__index = LetterNotation
-setmetatable(LetterNotation, BaseLetterNotation)
-LetterNotation.__tostring = function () return "LetterNotation" end
+LetterNotation.__tostring = function ()
+    return "LetterNotation"
+end
+setmetatable(LetterNotation, Notation)
 
-function LetterNotation:new(opt)
-    opt = opt or {}
-    return setmetatable({
-        letters = "~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        dynamic = opt.dynamic or false,
-        reversed = opt.reversed or false
-    }, LetterNotation)
+function LetterNotation:new()
+    return setmetatable({}, LetterNotation)
+end
+
+local letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+function LetterNotation:format(n, places)
+    return "haha,"
 end
 
 return LetterNotation

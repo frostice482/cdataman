@@ -5,7 +5,7 @@ Notation = nativefs.load(Talisman.mod_path.."/big-num/notations/notation.lua")()
 BaseLetterNotation = {}
 BaseLetterNotation.__index = BaseLetterNotation
 BaseLetterNotation.__tostring = function (notation)
-    return "BaseLetterNotation {"..notation.letters.."}"
+    return "BaseLetterNotation {"..(notation.letters or "").."}"
 end
 setmetatable(BaseLetterNotation, Notation)
 
@@ -19,7 +19,7 @@ function BaseLetterNotation:new(opt)
 end
 
 function BaseLetterNotation:get_letters(n)
-    local order = math.floor(n.e / 3)
+    local order = math.floor(n:log10():floor() / 3)
     local result = ""
     while order > 0 do
         local letter_index = 1 + order % #self.letters
@@ -30,7 +30,14 @@ function BaseLetterNotation:get_letters(n)
 end
 
 function BaseLetterNotation:get_number(n, places)
-    local num = n.m * 10 ^ (n.e % 3)
+    -- local num = n.m * 10 ^ (n.e % 3)
+    -- mantissa E (exponent mod 3)
+    local mantissa = n:div(10 ^ n:log10():floor())
+    local exponent = n:log10():floor()
+
+    local num = mantissa * 10 ^ (exponent % 3)
+    num = num:to_number()
+
     return Notation.format_mantissa(num, places)
 end
 
