@@ -22,7 +22,7 @@ function Notation:get_suffix(n)
 end
 
 function Notation:format(n, places, places1000)
-    if n:is_negative() then
+    if n.sign and n.sign == -1 then
         return "-" .. self:format(n:negate(), places, places1000)
     end
 

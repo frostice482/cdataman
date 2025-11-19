@@ -25,6 +25,12 @@ return {
     tal_last_elapsed = 'Calculations last played hand',
     tal_unknown = 'Unknown',
 
+    talisman_notation = 'Number Notation',
+
+    talisman_notations_hypere = 'Hyper-E',
+    talisman_notations_letter = 'Letter',
+    talisman_notations_array = 'Array',
+
     --These don't work out of the box because they would be called too early, find a workaround later?
     talisman_error_A = 'Could not find proper Talisman folder. Please make sure the folder for Talisman is named exactly "Talisman" and not "Talisman-main" or anything else.',
     talisman_error_B = '[Talisman] Error unpacking string: ',
