@@ -58,6 +58,24 @@ function Talisman.config_sections.disable_omega()
     })
 end
 
+function Talisman.config_sections.notation()
+    local ex = to_big(1e20):tetrate(1e20)
+    local opts = {}
+    for i,loc in ipairs(Talisman.notations.loc_keys) do
+        opts[i] = string.format('%s (%s)', localize(loc), Notations[Talisman.notations.filenames[i]]:format(ex, 3))
+    end
+
+    return create_option_cycle({
+        label = localize("talisman_notation"),
+        options = opts,
+        current_option = get_index(Talisman.notations.filenames, Talisman.config_file.notation or 'Balatro') or 1,
+        w = 8,
+        scale = 0.8,
+        text_scale = 0.5,
+        opt_callback = 'tal_update_notation'
+    })
+end
+
 function Talisman.config_sections.enable_type_compat()
     return create_toggle({
         label = localize("tal_enable_compat"),
@@ -89,6 +107,7 @@ end
 Talisman.config_sections_array = {
     Talisman.config_sections.disable_anim,
     Talisman.config_sections.disable_omega,
+    Talisman.config_sections.notation,
     Talisman.config_sections.enable_type_compat,
     Talisman.config_sections.type_compat_alert,
 }
@@ -158,6 +177,11 @@ function G.FUNCS.talismanMenu(e)
         }),
         config = { offset = { x = 0, y = 10 } }
     }
+end
+
+function G.FUNCS.tal_update_notation(arg)
+    Talisman.config_file.notation = Talisman.notations.filenames[arg.to_key]
+    Talisman.save_config()
 end
 
 G.UIDEF.tal_credits = Talisman.credits_tab

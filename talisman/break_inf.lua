@@ -37,16 +37,14 @@ end
 local nf = number_format
 function number_format(num, e_switch_point)
     if not is_big(num) then return nf(num, e_switch_point) end
-
+    local notation = Notations[Talisman.config_file.notation or 'Balatro'] or Notations.Balatro
     if num.asize > 2 then
-        return Notations.Balatro:format(num, 3)
+        return notation:format(num, 3)
     end
-
     if num < G.E_SWITCH_POINT then
         return nf(num:to_number(), e_switch_point)
     end
-
-    return Notations.Balatro:format(num, 3)
+    return notation:format(num, 3)
 end
 
 require("talisman.break_math")

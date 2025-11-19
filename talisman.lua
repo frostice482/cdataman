@@ -33,19 +33,38 @@ function init_localization()
 end
 
 Talisman = {
-  config_file = {
-    disable_anims = false,
-    break_infinity = "omeganum",
-    score_opt_id = 2
-  },
   mod_path = talisman_path,
   F_NO_COROUTINE = false,
   cdataman = true
 }
+Talisman.config_file = {
+  disable_anims = false,
+  break_infinity = "omeganum",
+  notation = "Balatro"
+}
+Talisman.notations = {
+  loc_keys = {
+    "talisman_notations_hypere",
+    --"talisman_notations_letter",
+    "talisman_notations_array",
+    --"k_ante"
+  },
+  filenames = {
+    "Balatro",
+    --"LetterNotation",
+    "ArrayNotation",
+    --"AnteNotation",
+  }
+}
 
 local conf = nativefs.read(talisman_path.."/config.lua")
 if conf then
-    Talisman.config_file = STR_UNPACK(conf)
+  local parsed = STR_UNPACK(conf)
+  if parsed then
+    for k,v in pairs(parsed) do
+      Talisman.config_file[k] = v
+    end
+  end
 end
 
 local g_start_run = Game.start_run

@@ -1,5 +1,6 @@
 local Notation = require("big-num.notations.notation")
-BalaNotation = {}
+
+local BalaNotation = {}
 BalaNotation.__index = BalaNotation
 BalaNotation.__tostring = function ()
     return "BalaNotation"
