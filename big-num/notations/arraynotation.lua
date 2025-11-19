@@ -1,7 +1,6 @@
-local lovely = require("lovely")
-local nativefs = require("nativefs")
-Notation = nativefs.load(Talisman.mod_path.."/big-num/notations/notation.lua")()
-ArrayNotation = {}
+local Notation = require("big-num.notations.notation")
+
+local ArrayNotation = {}
 ArrayNotation.__index = ArrayNotation
 ArrayNotation.E_SWITCH_POINT = 10000
 ArrayNotation.__tostring = function ()
@@ -16,13 +15,13 @@ end
 function ArrayNotation:format(n, places)
     local str = "{"
 
-    local entries = #n.array
+    local entries = #n:get_array()
 
     local decimals = math.max(3 - entries, 0)
     local shortening_point = 6 --6 array elements before we truncate
     local shorten = entries > shortening_point
     local i = 0
-    for _,entry in pairs(n.array) do
+    for _,entry in pairs(n:get_array()) do
         i = i + 1
         if not shorten then
             local formatted = decimals > 0 and Notation.format_mantissa(entry, decimals) or math.floor(entry)
