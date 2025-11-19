@@ -40,13 +40,17 @@ function init_localization()
 	talismanloc()
 end
 
-Talisman = {config_file = {disable_anims = false, break_infinity = "omeganum", score_opt_id = 2}, mod_path = talisman_path}
+Talisman = {config_file = {disable_anims = false, break_infinity = "omeganum", score_opt_id = 2}, mod_path = talisman_path, default_notation = "Balatro"}
 local config_read_result = nativefs.read(talisman_path.."/config.lua")
 if config_read_result then
     Talisman.config_file = STR_UNPACK(config_read_result)
     if Talisman.config_file.break_infinity == "bignumber" then
       Talisman.config_file.break_infinity = "omeganum"
       Talisman.config_file.score_opt_id = 2
+    end
+
+    if not Talisman.config_file.notation_key then
+      Talisman.config_file.notation_key = "Balatro"
     end
     if Talisman.config_file.score_opt_id == 3 then Talisman.config_file.score_opt_id = 2 end
     if Talisman.config_file.break_infinity and type(Talisman.config_file.break_infinity) ~= 'string' then
@@ -193,15 +197,15 @@ if Talisman.config_file.break_infinity then
           end
           if num.str then return num.str end
           if num:arraySize() > 2 then
-            local str = Notations[Talisman.config_file.notation_key]:format(num, 3)
+            local str = Notations[Talisman.config_file.notation_key or Talisman.default_notation]:format(num, 3)
             num.str = str
             return str
           end
-          G.E_SWITCH_POINT = Notations[Talisman.config_file.notation_key].E_SWITCH_POINT or G.E_SWITCH_POINT or 100000000000
-          if ((num or 0) < (to_big(G.E_SWITCH_POINT) or 0)) and not Notations[Talisman.config_file.notation_key].always_use then
+          G.E_SWITCH_POINT = Notations[Talisman.config_file.notation_key or Talisman.default_notation].E_SWITCH_POINT or G.E_SWITCH_POINT or 100000000000
+          if ((num or 0) < (to_big(G.E_SWITCH_POINT) or 0)) and not Notations[Talisman.config_file.notation_key or Talisman.default_notation].always_use then
               return nf(num:to_number(), e_switch_point)
           else
-            return Notations[Talisman.config_file.notation_key]:format(num, 3)
+            return Notations[Talisman.config_file.notation_key or Talisman.default_notation]:format(num, 3)
           end
       else return nf(num, e_switch_point) end
   end
