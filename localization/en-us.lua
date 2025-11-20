@@ -11,6 +11,12 @@ return {
         talisman_vanilla = 'Vanilla (e308)',
         talisman_bignum = 'BigNum (ee308)',
         talisman_omeganum = 'OmegaNum',
+
+        talisman_notation = 'Number Notation',
+
+        talisman_notations_hypere = 'Hyper-E',
+        talisman_notations_letter = 'Letter',
+        talisman_notations_array = 'Array',
         
         talisman_string_A = 'Select features to enable:',
         talisman_string_B = 'Disable Scoring Animations',
