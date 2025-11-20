@@ -570,7 +570,7 @@ function tal_uht(config, vals)
         end
         if type(vals.chips) == 'string' then delta = vals.chips end
         G.GAME.current_round.current_hand.chips = vals.chips
-        if G.hand_text_area.chips.config.object then
+        if (G.hand_text_area.chips or {config = {}}).config.object then
           G.hand_text_area.chips:update(0)
         end
     end
@@ -582,7 +582,7 @@ function tal_uht(config, vals)
         end
         if type(vals.mult) == 'string' then delta = vals.mult end
         G.GAME.current_round.current_hand.mult = vals.mult
-        if G.hand_text_area.mult.config.object then
+        if  (G.hand_text_area.mult or {config = {}}).config.object then
           G.hand_text_area.mult:update(0)
         end
     end
