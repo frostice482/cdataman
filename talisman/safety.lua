@@ -1,17 +1,3 @@
-G.ARGS.str_unpack_env = {
-  Big = Big,
-  OmegaMeta = OmegaMeta,
-  to_big = to_big,
-  uncompress_big = uncompress_big,
-  inf = 1.79769e308,
-}
-
-function STR_UNPACK(str)
-  local chunk = assert(load(str, '=[temp:str_unpack]', 'bt', G.ARGS.str_unpack_env))
-  setfenv(chunk, G.ARGS.str_unpack_env)
-  return chunk()
-end
-
 function Talisman.sanitize(obj, done)
   if not done then done = {} end
   if done[obj] then return obj end
@@ -29,7 +15,15 @@ function Talisman.sanitize(obj, done)
   return obj
 end
 
-local copy_table_hook = copy_table
+function Talisman.create_unpack_env()
+  return {
+    Big = Big,
+    OmegaMeta = OmegaMeta,
+    to_big = to_big,
+    uncompress_big = uncompress_big,
+    inf = 1.79769e308,
+  }
+end
 
 function Talisman.copy_table(obj, reflist)
   if not reflist then reflist = {} end
@@ -47,7 +41,15 @@ function Talisman.copy_table(obj, reflist)
   return copy
 end
 
+local copy_table_hook = copy_table
 function copy_table(v)
   if not Talisman.config_file.enable_compat or not Big then return copy_table_hook(v) end
   return Talisman.copy_table(v)
+end
+
+function STR_UNPACK(str)
+  local env = Talisman.create_unpack_env()
+  local chunk = assert(load(str, '=[temp:str_unpack]', 'bt', env))
+  setfenv(chunk, env)
+  return chunk()
 end

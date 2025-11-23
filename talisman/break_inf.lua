@@ -221,3 +221,5 @@ if SMODS then
         return amount
     end
 end
+
+G.SAVED_GAME = nil

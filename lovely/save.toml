@@ -13,7 +13,7 @@ if v.__talisman then
 	for i, val in pairs(v.array) do
     v.array[i] = string.format("[%s]=%s,", i, val or 0)
 	end
-  v = string.format("(to_big and to_big({%s}, %s) or %s)", table.concat(v.array), v.sign, v.val)
+  v = string.format("(Big and to_big({%s}, %s) or %s)", table.concat(v.array), v.sign, v.val)
 '''
 match_indent = true
 
