@@ -10,6 +10,4 @@ Cdataman also contains _some_ changes that may not present in Talisman.
 Cdataman requires [Lovely](https://github.com/ethangreen-dev/lovely-injector) to be installed in order to be loaded by Balatro.
 
 ## Limitations
-- High scores will not be saved to your profile (this is to prevent your profile save from being incompatible with an unmodified instance of Balatro)
-- Savefiles created/opened with Talisman aren't backwards-compatible with unmodified versions of Balatro.
 - The largest ante before the new limit is approximately 1e300 due to BigNumber antes not being supported
