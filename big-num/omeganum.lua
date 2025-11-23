@@ -80,7 +80,7 @@ end
 local function arraySizeOf(arr)
     local total = 0
     for i, v in pairs(arr) do
-        if type(i) == "number" and v ~= 0 then
+        if type(i) == "number" and v ~= 0 and i > total then
             total = i
         end
     end
@@ -152,15 +152,15 @@ function Big:compareTo(other)
     if (self.asize>other.asize) then
         r = 1;
     elseif (self.asize<other.asize) then
-        r = -1;
+        r = -2;
     else
         for i=self_array_size, 1, -1 do
             local a, b = arr[i] or 0, other_arr[i] or 0
             if a > b then
-                r = 1
+                r = 3
                 break
             elseif a < b then
-                r = -1
+                r = -4
                 break
             end
         end
@@ -1454,12 +1454,15 @@ end
 --- @class t.Omega.Low
 --- @field array number[]
 --- @field sign number
+--- @field val number
+--- @field __talisman boolean
 
 --- @return t.Omega.Low
 function Big:as_table()
     return {
         array = bigs[self],
         sign = self.sign,
+        val = self:min(B.MAX_VALUE):to_number(),
         __talisman = true
     }
 end
