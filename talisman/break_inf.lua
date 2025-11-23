@@ -118,15 +118,19 @@ function get_blind_amount(ante)
 end
 
 function check_and_set_high_score(score, amt)
-    if G.GAME.round_scores[score] and to_big(math.floor(amt)) > to_big(G.GAME.round_scores[score].amt) then
-        G.GAME.round_scores[score].amt = to_big(math.floor(amt))
+    amt = math.floor(amt)
+    local hs = G.PROFILES[G.SETTINGS.profile].high_scores[score]
+    local rs = G.GAME.round_scores[score]
+    if rs and amt > rs.amt then
+        rs.amt = amt
     end
     if G.GAME.seeded then return end
-    --[[if G.PROFILES[G.SETTINGS.profile].high_scores[score] and math.floor(amt) > G.PROFILES[G.SETTINGS.profile].high_scores[score].amt then
-    if G.GAME.round_scores[score] then G.GAME.round_scores[score].high_score = true end
-    G.PROFILES[G.SETTINGS.profile].high_scores[score].amt = math.floor(amt)
-    G:save_settings()
-  end--]] --going to hold off on modifying this until proper save loading exists
+
+    if hs and math.floor(amt) > hs.amt then
+        if rs then rs.high_score = true end
+        hs.amt = amt
+        G:save_settings()
+    end
 end
 
 local ics = inc_career_stat
