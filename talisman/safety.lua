@@ -19,20 +19,22 @@ function Talisman.sanitize(obj, done)
 
   for k,v in pairs(obj) do
     local t = type(v)
-    if t == "table" then
-      Talisman.sanitize(v, done)
-    elseif Big and Big.is(v) then
+    if Big and Big.is(v) then
       obj[k] = v:as_table()
+    elseif t == "table" then
+      Talisman.sanitize(v, done)
     end
   end
 
   return obj
 end
 
+local copy_table_hook = copy_table
+
 function Talisman.copy_table(obj, reflist)
   if not reflist then reflist = {} end
   if type(obj) ~= 'table' then return obj end
-  if Big.is(obj) then return obj end
+  if Big and Big.is(obj) then return obj end
   if reflist[obj] then return reflist[obj] end
 
   local copy = {}
@@ -45,7 +47,6 @@ function Talisman.copy_table(obj, reflist)
   return copy
 end
 
-local copy_table_hook = copy_table
 function copy_table(v)
   if not Talisman.config_file.enable_compat or not Big then return copy_table_hook(v) end
   return Talisman.copy_table(v)

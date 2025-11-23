@@ -59,6 +59,8 @@ function Talisman.config_sections.disable_omega()
 end
 
 function Talisman.config_sections.notation()
+    if not Big then return { n = G.UIT.R } end
+
     local ex = to_big(1e20):tetrate(1e20)
     local opts = {}
     for i,loc in ipairs(Talisman.notations.loc_keys) do
