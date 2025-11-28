@@ -48,7 +48,7 @@ function co.forcestop()
 	if not Talisman.scoring_coroutine then return end
 
 	G.FUNCS.exit_overlay_menu()
-	if co.aborted and Talisman.scoring_state == "main" then
+	if co.aborted and Talisman.scoring_coroutine.state == "main" then
 		evaluate_play_final_scoring(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
 	end
 	G.GAME.LAST_CALCS = Talisman.scoring_coroutine.calculations
