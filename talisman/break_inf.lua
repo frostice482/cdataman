@@ -41,7 +41,7 @@ function number_format(num, e_switch_point)
     if num.asize > 2 then
         return notation:format(num, 3)
     end
-    if num < G.E_SWITCH_POINT then
+    if num:abs() < G.E_SWITCH_POINT then
         return nf(num:to_number(), e_switch_point)
     end
     return notation:format(num, 3)
@@ -161,12 +161,8 @@ function scale_number(number, scale, max, e_switch_point)
     if not Big then return sn(number, scale, max, e_switch_point) end
 
     if not max then max = 10000 end
-    if not is_big(scale) then
-        scale = to_big(scale)
-    end
-    if not is_big(number) then
-        number = Big:ensureBig(number)
-    end
+    scale = Big:ensureBig(scale)
+    number = Big:ensureBig(number)
 
     if not e_switch_point and number.asize > 2 then             --this is noticable faster than >= on the raw number for some reason
         if number.asize <= 2 and (number:get_array()[1] or 0) <= 999 then --gross hack
@@ -175,14 +171,14 @@ function scale_number(number, scale, max, e_switch_point)
             scale = scale * math.floor(math.log(max * 10, 10)) /
             math.floor(math.max(7, string.len(number_format(number)) - 1))
         end
-    elseif to_big(number) >= (e_switch_point and to_big(e_switch_point) or G.E_SWITCH_POINT) then
+    elseif number:abs() >= (e_switch_point or G.E_SWITCH_POINT) then
         if number.asize <= 2 and (number:get_array()[1] or 0) <= 999 then --gross hack
             scale = scale * math.floor(math.log(max * 10, 10)) / 7    --this divisor is a constant so im precalcualting it
         else
             scale = scale * math.floor(math.log(max * 10, 10)) /
             math.floor(math.max(7, string.len(number_format(number)) - 1))
         end
-    elseif to_big(number) >= to_big(max) then
+    elseif number:abs() >= max then
         scale = scale * math.floor(math.log(max * 10, 10)) / math.floor(math.log(number * 10, 10))
     end
 
