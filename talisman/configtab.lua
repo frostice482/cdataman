@@ -8,7 +8,7 @@ if not SMODS then
             minw = 5,
             button = "talismanMenu",
             label = {
-                "cdataman"
+                "Amulet"
             },
             colour = G.C.GOLD
         })
@@ -144,7 +144,7 @@ function Talisman.credits_tab()
         n = G.UIT.ROOT,
         config = Talisman.config_ui_base,
         nodes = {
-            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "cdataman devs:", scale = 0.4 } }}, config = { padding = 0.1 } },
+            { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "Amulet devs:", scale = 0.4 } }}, config = { padding = 0.1 } },
             { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "- frostice482", scale = 0.4 } }} },
 
             { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "Talisman devs:", scale = 0.4 } }}, config = { padding = 0.1 } },
@@ -162,7 +162,7 @@ function G.FUNCS.talismanMenu(e)
         snap_to_nav = true,
         tabs = {
             {
-                label = "cdataman",
+                label = "Amulet",
                 chosen = true,
                 tab_definition_function = Talisman.config_tab
             },

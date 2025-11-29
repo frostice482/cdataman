@@ -1,6 +1,6 @@
 {
-	"id": "cdataman",
-	"name": "cdataman",
+	"id": "amulet",
+	"name": "amulet",
 	"author": [
 		"frostice482",
 		"..."
@@ -11,8 +11,9 @@
 	"priority": 0,
 	"badge_colour": "",
 	"badge_text_colour": "",
-	"version": "3.2.3",
+	"version": "3.2.4",
 	"provides": [
+		"cdataman (3.2.4)",
 		"Talisman (2.6)"
 	]
 }

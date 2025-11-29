@@ -1,5 +1,5 @@
 local nativefs = require("nativefs")
-local talisman_path = _mod_dir_cdataman
+local talisman_path = _mod_dir_amulet
 
 assert(nativefs.mount(talisman_path..'/talisman', 'talisman'))
 assert(nativefs.mount(talisman_path..'/big-num', 'big-num'))
@@ -35,7 +35,7 @@ end
 Talisman = {
   mod_path = talisman_path,
   F_NO_COROUTINE = false,
-  cdataman = true
+  Amulet = true
 }
 Talisman.config_file = {
   disable_anims = false,

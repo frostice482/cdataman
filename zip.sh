@@ -1,2 +1,2 @@
-rm -f cdataman.zip
-zip -ru cdataman.zip *
+rm -f Amulet.zip
+zip -ru Amulet.zip *
